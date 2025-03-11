@@ -1,0 +1,179 @@
+---
+title: "Sprich"
+format: html
+editor: visual
+---
+
+Quarto document for fitting species richness among depth bands and slope orientation using Bayesian and lognormal distribution. Habitat type and site are considered group level variables. 
+
+# Load library
+
+```{r}
+#| label: libraries
+#| output: false
+#| eval: true
+#| warning: false
+#| message: false
+#| cache: false
+
+library(tidyverse)
+#library(rstanarm)
+library(brms)
+library(coda)
+library(bayesplot)
+library(DHARMa)
+library(emmeans)
+library(broom)
+library(tidybayes)
+library(ggeffects)
+library(broom.mixed)
+library(bayestestR)
+library(see)
+library(easystats)
+library(patchwork)
+library(ggridges)
+source("helperFunctions.R")
+library(ggimage)
+library(vegan)
+library(BiodiversityR)
+library(ggrepel)
+```
+
+# Read data
+
+```{r}
+sprich <- read_csv("Data/herb_sprich.csv",
+                      trim_ws = TRUE)
+glimpse(sprich)
+```
+
+# Declare factors
+
+```{r}
+sprich <- sprich |> 
+  mutate(Site = factor(Site),
+         Aspect = factor(Aspect),
+         Habitat = factor(Habitat))
+```
+
+# Model fitting
+
+## Define formula: habitat and site as random vars
+
+```{r}
+sprich_form <- bf(Estimator ~ Depth_m +
+                          Aspect + 
+                          (1 | Site) +
+                          (1 | Habitat),
+                        family = lognormal())
+```
+
+## Data exploration
+
+```{r}
+sprich |> 
+  summarise(log_med = log(median(Estimator)),
+            log_mad = log(mad(Estimator))) 
+```
+
+## Weakly informative priors
+
+```{r}
+priors_sprich <- prior(normal(1.2, 1.3), class = "Intercept") +
+  prior(normal(0, 1), class = "b") +
+  prior(student_t(3, 0, 1.3), class = "sigma") +
+  prior(student_t(3, 0, 1.3), class = "sd")
+```
+
+## Prior only model (5000 iter)
+
+```{r}
+prior_mod_sprich <- brm(sprich_form,
+                    data = sprich,
+                    prior = priors_sprich,
+                    sample_prior = "only",
+                    iter = 5000,
+                    warmup = 1000,
+                    chains = 3,
+                    cores = 6,
+                    thin = 5,
+                    control = list(adapt_delta = 0.99,
+                                   max_treedepth = 20),
+                    refresh = 0)
+```
+
+## Prior evaluation
+
+```{r}
+prior_mod_sprich |> conditional_effects() |> 
+  plot(points = TRUE,
+       ask = FALSE,
+       plot = FALSE) |> 
+  wrap_plots() & 
+  scale_y_log10()
+```
+
+# Fit model (10000 iter)
+
+```{r}
+#| cache: true
+sprich_mod <- update(prior_mod_sprich,
+                  sample_prior = "yes",
+                    iter = 10000,
+                    warmup = 2000,
+                    refresh = 2000)
+```
+
+# Partial plots
+
+```{r}
+sprich_mod |> conditional_effects() |> 
+  plot(points = TRUE,
+       ask = FALSE,
+       plot = FALSE) |> 
+  wrap_plots()
+```
+
+# Chain diagnostics
+
+```{r}
+# prep
+par_sprich_mod <- sprich_mod |>  
+  get_variables() |> 
+  str_subset("^b_.*")
+
+# trace
+sprich_mod |> mcmc_plot(type = "trace",
+                         par = par_sprich_mod)
+ 
+# autocorr
+sprich_mod |> mcmc_plot(type = "acf_bar",
+                         par = par_sprich_mod)
+  
+# rhat
+sprich_mod  |> mcmc_plot(type = "rhat_hist")
+
+# ess
+sprich_mod  |> mcmc_plot(type = "neff_hist")
+```
+
+# Residuals
+
+```{r}
+sprich_resids <- make_brms_dharma_res(sprich_mod)
+
+# qqplot
+sprich_resids |> testUniformity()
+
+#residplot
+sprich_resids |> plotResiduals(quantreg = TRUE)
+```
+
+
+# Save model
+
+```{r}
+fin_sprich_mod <- sprich_mod
+
+save(fin_sprich_mod, file = "fin_sprich_mod.Rdata")
+```

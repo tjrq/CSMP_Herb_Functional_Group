@@ -1,0 +1,283 @@
+---
+title: "Herb_Assem_Multivariate"
+format: html
+editor: visual
+---
+
+# Load library
+
+```{r}
+#| label: libraries
+#| output: false
+#| eval: true
+#| warning: false
+#| message: false
+#| cache: false
+
+library(tidyverse)
+library(patchwork)
+library(vegan)
+library(BiodiversityR)
+library(ggrepel)
+library(ggforce)
+```
+
+# Read data
+
+```{r}
+abun_ord <- read_csv("Data/herb_assem.csv", 
+                     trim_ws = TRUE)
+
+glimpse(abun_ord)
+```
+
+# Separate env and species matrix
+
+```{r}
+abun_env <- abun_ord |> 
+  select(...1:Aspect_descriptive)
+
+abun_spmatrix <- abun_ord |> 
+  select(Acanthurus_auranticavus:Zebrasoma_velifer)
+```
+
+# Wisconsin and fourth root standardization
+
+```{r}
+abun_stand <- wisconsin(abun_spmatrix^0.25)
+```
+
+# Run CAP
+
+```{r}
+#| cache: true
+
+abun_cap <- capscale(abun_stand ~ Depth_group +
+                       Slope_group,
+                     data = abun_env,
+                     distance = "bray",
+                     sqrt.dist = FALSE)
+```
+
+# Plot ordination
+
+```{r}
+plot_cap <- abun_cap |> ordiplot(choices=c(1,2))
+```
+
+# Calculate abundance per site/row to scale size of dots to abundance
+
+```{r}
+abun_spmatrix_v2 <- rowSums(abun_spmatrix)
+
+abun_env <- cbind(abun_env, # combine with env db
+                  abun_spmatrix_v2) 
+```
+
+# Extract CAP scores
+
+```{r}
+scores <- sites.long(plot_cap,
+                     env.data = abun_env)
+```
+
+# Plot ordination
+
+```{r}
+p_ord1 <- 
+ggplot() +
+  geom_point(data = scores, 
+             aes(x = axis1,
+                 y = axis2,
+             color = Depth_group,
+             size = abun_spmatrix_v2)) +
+  scale_color_manual(values = c("Shallow" = "#8AA17D",
+                                "Upper_mesophotic" = "#929FBD",
+                                "Lower_mesophotic" = "#E29297")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed") +
+  theme_classic()
+```
+
+# Adding layers to the ordination
+
+```{r fig.height=5, fig.width=8, dpi=300}
+p_ord2 <- 
+p_ord1 +
+  scale_fill_discrete(breaks = c("Shallow",
+                                 "Upper_mesophotic",
+                                 "Lower_mesophotic")) +
+  guides(size = "none",
+         color = "none", 
+         fill = guide_legend("Depth_group")) +
+  geom_mark_hull(data = scores,
+                 aes(x = axis1,
+                     y = axis2,
+                     fill = Depth_group),
+                 concavity = 20,
+                 expand = 0) +
+  scale_x_continuous(name = "CAP: 47.04% fitted, 4.5% total ") +
+  scale_y_continuous(name = "CAP: 26.46% fitted, 2.5% total") +
+  scale_color_manual(values = c("Shallow" = "#8AA17D",
+                                "Upper_meso" = "#929FBD",
+                                "Lower_meso" = "#E29297"))
+```
+
+# Add species loadings with significance via envfit
+
+```{r}
+spec_envfit <- envfit(plot_cap, # run envfit
+                      env = abun_stand,
+                      permutations = 10000)
+
+envfit_r_p <- data.frame(r = spec_envfit$vectors$r, # extract r and p values
+                         p = spec_envfit$vectors$pvals)
+
+sp_long2 <- species.long(plot_cap, # matrix for ordination scores and r and p values
+             spec.data = envfit_r_p)
+
+sp_long3 <- sp_long2 |> # extract r < 0.001 
+  filter(p < 0.001) 
+
+labels_abb <- c("An", "Ap", "Cbis", "Ch", "Cbin", "Nl") #manually abbreviate cause the "_" messes with the mutate abb
+
+sp_long4 <- cbind(sp_long3, labels_abb) # db with abbreviated labels
+```
+
+# Add envfit arrows unto ordination
+
+## Plot envfit on the figures
+
+```{r}
+p_ord3 <- p_ord2 + 
+  geom_segment(data = sp_long4,
+               aes(x = 0,
+                   y = 0,
+                   xend = axis1,
+                   yend = axis2,
+                   color = "black",
+                   size = 0.5)) +
+  geom_text_repel(data = sp_long4,
+                  aes(x = axis1,
+                      y = axis2,
+                      label = labels_abb,
+                      size = 200),
+                  max.overlaps = 30) +
+  theme(axis.title=element_text(size = 15),
+        axis.text=element_text(size = 12),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 18))
+```
+
+## Plot slope for ESM
+
+```{r}
+p_slope <- 
+ggplot() +
+  geom_point(data = scores, 
+             aes(x = axis1,
+                 y = axis2,
+             color = Slope_group,
+             size = abun_spmatrix_v2)) +
+  scale_color_manual(values = c("Flat" = "#8AA17D",
+                                "Slope" = "#929FBD",
+                                "Wall" = "#E29297")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed") +
+  scale_fill_discrete(breaks = c("Flat",
+                                 "Slope",
+                                 "Wall")) +
+  guides(size = "none",
+         color = "none", 
+         fill = guide_legend("Slope_group")) +
+  geom_mark_hull(data = scores,
+                 aes(x = axis1,
+                     y = axis2,
+                     fill = Slope_group),
+                 concavity = 20,
+                 expand = 0) +
+  scale_x_continuous(name = "CAP: 47.04% fitted, 4.5% total ") +
+  scale_y_continuous(name = "CAP: 26.46% fitted, 2.5% total") +
+  theme_classic() +
+  theme(axis.title=element_text(size = 15),
+        axis.text=element_text(size = 12),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 18))
+```
+
+## ggsave
+
+```{r}
+ggsave("Fig. SX. assem_slope.jpeg",
+       plot = p_slope, 
+       dpi = 600, 
+       height = 5, 
+       width = 7, 
+       units = "in")
+```
+
+# PERMANOVA
+
+```{r}
+adonis2(abun_stand ~ Depth_group +
+          Slope_group, 
+        data = abun_env,
+        perm = 10000)
+```
+
+# Fig abundance
+
+```{r}
+ord_mean_abun <- 
+abun_ord |> 
+  select(Depth_group,
+         Naso_lituratus, 
+         Acanthurus_nigricans,
+         Centropyge_bispinosa,
+         Acanthurus_pyroferus,
+         Ctenochaetus_binotatus,
+         Centropyge_heraldi) |> 
+  pivot_longer(!Depth_group, 
+               names_to = "Species",
+               values_to = "Abundance") |> 
+  mutate(Depth_group = factor(Depth_group,
+         levels = c("Shallow",
+                    "Upper_mesophotic",
+                    "Lower_mesophotic"))) |> 
+  group_by(Depth_group,
+           Species) |> 
+  summarise(MEAN = mean(Abundance),
+            STDE = std_error(Abundance)) |> 
+  ggplot(aes(x = Depth_group,
+             y = MEAN, 
+         color = Depth_group)) +
+  geom_pointrange(aes(ymin = MEAN - STDE,
+                      ymax = MEAN + STDE)) +
+  facet_wrap(~ Species,
+             scales = "free") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 20,
+                                 vjust = 0.85,
+                                 hjust = 0.70,
+                                 size = 12),
+        axis.title = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        legend.position = "none",
+        strip.text = element_text(size = 15)) +
+  scale_y_continuous(expression(Abundance~(ind.150m^-2)))
+```
+
+## ggsave
+
+```{r}
+ggsave("Fig. SX. assem_abundance.jpeg",
+       plot = ord_mean_abun, 
+       dpi = 600, 
+       height = 6, 
+       width = 10, 
+       units = "in")
+```

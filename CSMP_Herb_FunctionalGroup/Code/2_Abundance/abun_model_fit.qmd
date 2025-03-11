@@ -1,0 +1,730 @@
+---
+title: "Abundance_fit"
+format: html
+editor: visual
+---
+
+Quarto document for fitting abundance among depth bands and slope orientation using Bayesian and negatative binomial distribution. Habitat type and site are considered group level variables.
+
+# Load library
+
+```{r}
+#| label: libraries
+#| output: false
+#| eval: true
+#| warning: false
+#| message: false
+#| cache: false
+
+library(tidyverse)
+#library(rstanarm)
+library(brms)
+library(coda)
+library(bayesplot)
+library(DHARMa)
+library(emmeans)
+library(broom)
+library(tidybayes)
+library(ggeffects)
+library(broom.mixed)
+library(bayestestR)
+library(see)
+library(easystats)
+library(patchwork)
+library(ggridges)
+source("helperFunctions.R")
+library(ggimage)
+library(vegan)
+library(BiodiversityR)
+library(ggrepel)
+```
+
+# Read data
+
+```{r}
+fg_abun <- 
+  read_csv("Data/herb_abundance.csv",
+           trim_ws = TRUE)
+
+glimpse(fg_abun)
+```
+
+# Declare factors
+
+```{r}
+fg_abun <- fg_abun |> 
+  mutate(Site = factor(Site),
+         Aspect_descriptive = factor(Aspect_descriptive),
+         Habitat = factor(Habitat),
+         herbs = cropper + browser + detritivore + excavator + scraper) # all herbivore column
+```
+
+# ALL HERBIVORES
+
+## define formula
+
+```{r}
+herbs_form <- 
+  bf(herbs ~ Depth_m +
+       Aspect_descriptive +
+       (1 | Site) + 
+       (1 | Habitat),
+     family = negbinomial(link = "log"))
+```
+
+## Data exploration
+
+```{r}
+fg_abun |> 
+  summarise(log_med = log(median(herbs)),
+            log_mad = log(mad(herbs))) 
+```
+
+## Weakly informative priors
+
+```{r}
+herb_priors <- prior(normal(1.2, 2), class = "Intercept") +
+  prior(normal(0, 1), class = "b") +
+  prior(gamma(0.01, 0.01), class = "shape") +
+  prior(student_t(3, 0, 2), class = "sd")
+```
+
+## Herbs prior only
+
+```{r}
+#| cache: true
+herbs_prior_mod <- brm(herbs_form,
+                    data = fg_abun,
+                    prior = herb_priors,
+                    sample_prior = "only",
+                    iter = 5000,
+                    warmup = 1000,
+                    chains = 3,
+                    cores = 6,
+                    thin = 5,
+                    control = list(adapt_delta = 0.99,
+                                   max_treedepth = 20),
+                    refresh = 0)
+```
+
+## Prior evaluation
+
+```{r}
+herbs_prior_mod |> conditional_effects() |> 
+  plot(points = TRUE,
+       ask = FALSE,
+       plot = FALSE) |> 
+  wrap_plots() & 
+  scale_y_log10()
+```
+
+# Fit model
+
+```{r}
+#| cache: true
+herbs_mod <- update(herbs_prior_mod,
+                  sample_prior = "yes",
+                    iter = 10000,
+                    warmup = 2000,
+                    refresh = 2000)
+```
+
+## Partial plot
+
+```{r}
+herbs_mod |> 
+  conditional_effects() |> 
+  plot(points = TRUE,
+       ask = FALSE,
+       plot = FALSE) |> 
+  wrap_plots()
+```
+
+# MCMC diagnostics
+
+```{r}
+par_herbs <- herbs_mod |>  
+  get_variables() |> 
+  str_subset("^b_.*")
+
+# trace
+herbs_mod |> mcmc_plot(type = "trace",
+                         par = par_herbs)
+# autocorr
+herbs_mod |> mcmc_plot(type = "acf_bar",
+                         par = par_herbs)
+
+# rhat
+herbs_mod |> mcmc_plot(type = "rhat_hist")
+
+# ess
+herbs_mod |> mcmc_plot(type = "neff_hist")
+```
+
+### Residuals
+
+```{r}
+herbs_resids <- make_brms_dharma_res(herbs_mod)
+
+# qqplot
+herbs_resids |> testUniformity()
+
+# residplot
+herbs_resids |> plotResiduals()
+
+# testdisp
+herbs_resids |> testDispersion()
+```
+
+# CROPPERS
+
+## Define formula
+
+```{r}
+crop_formula <- 
+  bf(cropper ~ Depth_m +
+       Aspect_descriptive +
+       (1| Site) +
+       (1 | Habitat),
+     family = negbinomial(link = "log"))
+```
+
+## Data exploration
+
+```{r}
+fg_abun |> 
+  summarise(log_med = log(median(cropper)),
+            log_mad = log(mad(cropper)))
+```
+
+## Weakly informative priors
+
+```{r}
+priors_crop <- prior(normal(0.5, 2), class = "Intercept") +
+  prior(normal(0, 1), class = "b") +
+  prior(gamma(0.01, 0.01), class = "shape") +
+  prior(student_t(3, 0, 2), class = "sd")
+```
+
+## Crops prior only
+
+```{r}
+#| cache: true
+crop_prior_mod <- brm(crop_formula,
+                    data = fg_abun,
+                    prior = priors_crop,
+                    sample_prior = "only",
+                    iter = 5000,
+                    warmup = 1000,
+                    chains = 3,
+                    cores = 6,
+                    thin = 5,
+                    control = list(adapt_delta = 0.99,
+                                   max_treedepth = 20),
+                    refresh = 0)
+```
+
+## Prior evaluation
+
+```{r}
+crop_prior_mod |> conditional_effects() |> 
+  plot(points = TRUE,
+       ask = FALSE,
+       plot = FALSE) |> 
+  wrap_plots() & 
+  scale_y_log10()
+```
+
+## Fit model
+
+```{r}
+#| cache: true
+crop_mod <- update(crop_prior_mod,
+                  sample_prior = "yes",
+                    iter = 10000,
+                    warmup = 2000,
+                    refresh = 2000)
+```
+
+## MCMC diagnostics
+
+### trace
+
+```{r}
+par_crop <- crop_mod |>  
+  get_variables() |> 
+  str_subset("^b_.*")
+
+# trace
+crop_mod |> mcmc_plot(type = "trace",
+                         par = par_crop)
+# autocorr
+crop_mod  |> mcmc_plot(type = "acf_bar",
+                         par = par_crop)
+# rhat
+crop_mod |> mcmc_plot(type = "rhat_hist")
+# ess
+crop_mod|> mcmc_plot(type = "neff_hist")
+```
+
+## residuals
+
+```{r}
+crop_resids <- make_brms_dharma_res(crop_mod)
+# qqplot
+crop_resids |> testUniformity()
+# residplot
+crop_resids |> plotResiduals()
+# testdisp
+crop_resids |> testDispersion()
+```
+
+# DETRITIVORES
+
+## Define formula
+
+```{r}
+det_form <- 
+  bf(detritivore ~ Depth_m +
+       Aspect_descriptive +
+       (1 | Site) +
+       (1 | Habitat),
+     family = negbinomial(link = "log"))
+```
+
+## Prior exploration
+
+```{r}
+fg_abun |> 
+  group_by(Depth_m,
+           Aspect_descriptive) |>
+  summarise(med = log(median(detritivore)),
+            mad = log(mad(detritivore)))
+```
+
+## weakly informative priors
+
+```{r}
+det_priors <- prior(normal(0.5, 0.8), class = "Intercept") +
+  prior(normal(0, 2.2), class = "b") +
+  prior(gamma(0.01, 0.01), class = "shape") +
+  prior(student_t(3, 0 , 0.8), class = "sd")
+```
+
+## Dets prior only
+
+```{r}
+#| cache: true
+det_prior_mod <- brm(det_form,
+                    data = fg_abun ,
+                    prior = det_priors,
+                    sample_prior = "only",
+                    iter = 5000,
+                    warmup = 1000,
+                    chains = 3,
+                    cores = 6,
+                    thin = 5,
+                    control = list(adapt_delta = 0.99,
+                                   max_treedepth = 20),
+                    refresh = 1000)
+```
+
+## Eval prior model
+
+```{r}
+det_prior_mod |> conditional_effects() |> 
+  plot(points = TRUE,
+       ask = FALSE,
+       plot = FALSE) |> 
+  wrap_plots() & 
+  scale_y_log10()
+```
+
+## Fit model
+
+```{r}
+#| cache: true
+det_mod <- update(det_prior_mod,
+                  sample_prior = "yes",
+                    iter = 10000,
+                    warmup = 2000,
+                    refresh = 2000)
+```
+
+## Partial plot
+
+```{r}
+det_mod |> 
+  conditional_effects() |> 
+  plot(points = TRUE,
+       ask = FALSE,
+       plot = FALSE) |> 
+  wrap_plots()
+```
+
+## MCMC diagnostics
+
+### traceplot
+
+```{r}
+par_det <- det_mod |>  
+  get_variables() |> 
+  str_subset("^b_.*")
+# trace
+det_mod |> mcmc_plot(type = "trace",
+                         par = par_det)
+# autocorr
+det_mod  |> mcmc_plot(type = "acf_bar",
+                         par = par_det)
+# rhat
+det_mod |> mcmc_plot(type = "rhat_hist")
+# ess
+det_mod  |> mcmc_plot(type = "neff_hist")
+```
+
+## Residuals
+
+```{r}
+det_resids <- make_brms_dharma_res(det_mod)
+# qqplot
+det_resids |> testUniformity()
+# residplot
+det_resids |> plotResiduals()
+# testdisp
+det_resids |> testDispersion()
+```
+
+# SCRAPERS
+
+## Define formula
+
+```{r}
+scra_form <- 
+  bf(scraper ~ Depth_m +
+       Aspect_descriptive +
+       (1| Site) +
+       (1 | Habitat),
+     family = negbinomial(link = "log"))
+```
+
+## Explore priors
+
+```{r}
+fg_abun |> 
+  group_by(Depth_m,
+           Aspect_descriptive) |>
+  summarise(med = log(median(scraper)),
+            mad = log(mad(scraper)))
+```
+
+## weakly informative priors
+
+```{r}
+scra_priors <- prior(normal(2, 1), class = "Intercept") +
+  prior(normal(0, 1), class = "b") +
+  prior(gamma(0.01, 0.01), class = "shape") +
+  prior(student_t(3, 0, 1), class = "sd")
+```
+
+## Scra prior only
+
+```{r}
+#| cache: true
+
+scra_prior_mod <- brm(scra_form,
+                    data = fg_abun,
+                    prior = scra_priors,
+                    sample_prior = "only",
+                    iter = 5000,
+                    warmup = 1000,
+                    chains = 3,
+                    cores = 6,
+                    thin = 5,
+                    control = list(adapt_delta = 0.99,
+                                   max_treedepth = 20),
+                    refresh = 0)
+```
+
+## Eval prior only
+
+```{r}
+scra_prior_mod |> conditional_effects() |> 
+  plot(points = TRUE,
+       ask = FALSE,
+       plot = FALSE) |> 
+  wrap_plots() & 
+  scale_y_log10()
+```
+
+## fit model
+
+```{r}
+#| cache: true
+scra_mod <- update(scra_prior_mod,
+                  sample_prior = "yes",
+                    iter = 10000,
+                    warmup = 2000,
+                    refresh = 2000)
+```
+
+## partial plots
+
+```{r}
+scra_mod |> conditional_effects() |> 
+  plot(points = TRUE,
+       ask = FALSE,
+       plot = FALSE) |> 
+  wrap_plots()
+```
+
+## MCMC diagnostics
+
+### trace
+
+```{r}
+par_scra <- scra_mod |>  
+  get_variables() |> 
+  str_subset("^b_.*")
+# trace
+scra_mod |> mcmc_plot(type = "trace",
+                         par = par_scra)
+# autocorr
+scra_mod |> mcmc_plot(type = "acf_bar",
+                         par = par_scra)
+# rhat
+scra_mod |> mcmc_plot(type = "rhat_hist")
+# ess
+scra_mod |> mcmc_plot(type = "neff_hist")
+```
+
+## residuals
+
+```{r}
+scra_resids <- make_brms_dharma_res(scra_mod)
+# qqplot
+scra_resids |> testUniformity()
+# residplot
+scra_resids |> plotResiduals()
+# testdisp
+scra_resids |> testDispersion()
+```
+
+# EXCAVATORS
+
+## Define formula
+
+```{r}
+exc_form <- 
+  bf(excavator ~ Depth_m +
+       Aspect_descriptive +
+       (1| Site) +
+       (1 | Habitat),
+     family = negbinomial(link = "log"))
+```
+
+## Prior exploration
+
+```{r}
+fg_abun |> 
+  group_by(Depth_m,
+           Aspect_descriptive) |>
+  summarise(med = log(median(excavator)),
+            mad = log(mad(excavator)))
+```
+
+## weakly informative priors
+
+```{r}
+exc_priors <- prior(normal(2.3, 2.7), class = "Intercept") +
+  prior(normal(0, 0.2), class = "b") +
+  prior(gamma(0.01, 0.01), class = "shape") +
+  prior(student_t(3, 0, 2.7), class = "sd")
+```
+
+## exc prior model
+
+```{r}
+#| cache: true
+
+exc_prior_mod <- brm(exc_form,
+                    data = fg_abun,
+                    prior = exc_priors,
+                    sample_prior = "only",
+                    iter = 5000,
+                    warmup = 1000,
+                    chains = 3,
+                    cores = 6,
+                    thin = 5,
+                    control = list(adapt_delta = 0.99,
+                                   max_treedepth = 20),
+                    refresh = 0)
+```
+
+## eval priors
+
+```{r}
+exc_prior_mod |> conditional_effects() |> 
+  plot(points = TRUE,
+       ask = FALSE,
+       plot = FALSE) |> 
+  wrap_plots() & 
+  scale_y_log10()
+```
+
+## exc model
+
+```{r}
+#| cache: true
+exc_mod <- update(exc_prior_mod,
+                  sample_prior = "yes",
+                    iter = 10000,
+                    warmup = 2000,
+                    refresh = 2000)
+```
+
+## partial plots
+
+```{r}
+exc_mod |> conditional_effects() |> 
+  plot(points = TRUE,
+       ask = FALSE,
+       plot = FALSE) |> 
+  wrap_plots()
+```
+
+## MCMC diagnostics
+
+### trace
+
+```{r}
+par_exc <- exc_mod |>  
+  get_variables() |> 
+  str_subset("^b_.*")
+# trace
+exc_mod  |> mcmc_plot(type = "trace",
+                         par = par_exc)
+# autocorr
+exc_mod |> mcmc_plot(type = "acf_bar",
+                         par = par_exc)
+# rhat
+exc_mod|> mcmc_plot(type = "rhat_hist")
+# ess
+exc_mod |> mcmc_plot(type = "neff_hist")
+```
+
+## Residuals
+
+```{r}
+exc_resids <- make_brms_dharma_res(exc_mod) 
+# qqplot
+exc_resids |> testUniformity()
+# residplot
+exc_resids |> plotResiduals()
+# testdisp
+exc_resids |> testDispersion()
+```
+
+# BROWSER
+
+## define form
+
+```{r}
+brow_form <- 
+  bf(browser ~ Depth_m +
+       Aspect_descriptive +
+       (1| Site) + 
+       (1 | Habitat),
+     family = negbinomial(link = "log"))
+```
+
+## Prior exploration
+
+```{r}
+fg_abun |> 
+  group_by(Depth_m,
+           Aspect_descriptive) |>
+  summarise(med = log(median(browser)),
+            mad = log(mad(browser)))
+```
+
+## Define prior
+
+```{r}
+brow_prior <- prior(normal(0.5, 1), class = "Intercept") +
+  prior(normal(0, 3), class = "b") +
+  prior(gamma(0.01, 0.01), class = "shape") +
+  prior(student_t(3, 0, 1), class = "sd")
+```
+
+## brow prior model
+
+```{r}
+#| cache: true
+
+brow_mod_prior <- brm(brow_form,
+                    data = fg_abun,
+                    prior = brow_prior,
+                    sample_prior = "only",
+                    iter = 5000,
+                    warmup = 1000,
+                    chains = 3,
+                    cores = 6,
+                    thin = 5,
+                    control = list(adapt_delta = 0.99,
+                                   max_treedepth = 20),
+                    refresh = 0)
+```
+
+## Evaluate priors
+
+```{r}
+brow_mod_prior  |> conditional_effects() |> 
+  plot(points = TRUE,
+       ask = FALSE,
+       plot = FALSE) |> 
+  wrap_plots() & 
+  scale_y_log10()
+```
+
+## brow model
+
+```{r}
+#| cache: true
+brow_mod <- update(brow_mod_prior,
+                  sample_prior = "yes",
+                    iter = 10000,
+                    warmup = 2000,
+                    refresh = 2000)
+```
+
+## MCMC diagnostics
+
+### traceplot
+
+```{r}
+par_brow <- brow_mod |>  
+  get_variables() |> 
+  str_subset("^b_.*")
+# trace
+brow_mod |> mcmc_plot(type = "trace",
+                         par = par_brow)
+# autocorr
+brow_mod |> mcmc_plot(type = "acf_bar",
+                         par = par_brow)
+# rhat
+brow_mod |> mcmc_plot(type = "rhat_hist")
+# ess
+brow_mod |> mcmc_plot(type = "neff_hist")
+```
+
+## Residuals
+
+```{r}
+brow_resids <- make_brms_dharma_res(brow_mod)
+# qqplot
+brow_resids |> testUniformity()
+# residplot
+brow_resids |> plotResiduals()
+# testdisp
+brow_resids |> testDispersion()
+```

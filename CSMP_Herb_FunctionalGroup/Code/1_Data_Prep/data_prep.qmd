@@ -1,0 +1,343 @@
+---
+title: "Data preparation"
+format: html
+editor: visual
+---
+
+Quarto document for data preparation 
+
+# Load library
+
+```{r}
+#| label: libraries
+#| output: false
+#| eval: true
+#| warning: false
+#| message: false
+#| cache: false
+
+library(tidyverse)
+library(rstanarm)
+library(brms)
+library(coda)
+library(bayesplot)
+library(DHARMa)
+library(emmeans)
+library(broom)
+library(tidybayes)
+library(ggeffects)
+library(broom.mixed)
+library(bayestestR)
+library(see)
+library(easystats)
+library(patchwork)
+library(ggridges)
+source("helperFunctions.R")
+library(ggimage)
+library(iNEXT)
+```
+
+# Read csv
+
+```{r}
+db_master <- read_csv("Data/master_ROV_fish_Tim_2.csv",
+                  trim_ws = TRUE)
+
+glimpse(db_master)
+```
+
+## Abundance
+
+### Select relevant columns
+
+```{r}
+fg_abun <- db_master |>
+  filter(Family != "Chanidae" & # remove families mislabelled as herbivores
+           Family != "Ostraciidae" &
+           Family != "Pomacentridae" &
+           Family != "Tetraodontidae") |> 
+  select(Site,
+         Transect,
+         Number,
+         Depth_m,
+         Habitat,
+         Aspect_descriptive,
+         Functional.Group)
+```
+
+### Wide to long data format and select relevant functional groups
+
+```{r}
+fg_abun_wide <-
+fg_abun |> pivot_wider(names_from = Functional.Group, # wide format to account for 0 values
+                          values_from = Number,
+                          values_fn = sum) |> 
+  select(Site, 
+         Transect,
+         Depth_m,
+         Habitat,
+         Aspect_descriptive,
+         `cropper/grazer`,
+         browser,
+         detritivore,
+         excavator,
+         scraper) |> 
+  rename(cropper = `cropper/grazer`) |> # simplify cropper name
+  mutate(Habitat = recode(Habitat,
+                          bommie = "lagoon",
+                          outer_reef = "outer_slope"),
+         across(cropper: scraper, 
+                ~replace_na(.x, 0))) # replace na with 0
+```
+
+#### Export abundance csv
+
+```{r}
+db_abun <- write.csv(fg_abun_wide, "herb_abundance.csv")
+```
+
+## Biomass
+
+```{r}
+glimpse(db_master)
+```
+
+
+### Select relevant columns and remove families mislabelled as herbivores
+
+```{r}
+fg_biom_long <- db_master |>  
+  filter(Family != "Chanidae" & # remove families mislabelled as herbivores
+           Family != "Ostraciidae" &
+           Family != "Pomacentridae" &
+           Family != "Tetraodontidae") |> 
+  select(Site,
+         Transect,
+         #Genus,
+         #Species,
+         #Number,
+         Length_cm,
+         #Biomass.Constant.A,
+         #Biomass.Constant.B,
+         Biomass_G,
+         Depth_m,
+         Habitat,
+         Aspect_descriptive,
+         Functional.Group) |> 
+  filter(Biomass_G != "NA") # remove NA values (those that dont have size estimates)
+```
+mutate(across(Biomass_G,
+                  ~replace_na(.x, 0))) |> 
+
+### Long to wide format
+
+```{r}
+fg_biom_wide <-
+fg_biom_long |> 
+  group_by(Site, 
+           Transect, 
+           Depth_m,
+           Aspect_descriptive,
+           Functional.Group,
+           Habitat) |> 
+  summarise(Biomass_KG = sum(Biomass_G)/1000) |> 
+  ungroup() |>
+  #mutate(Biomass_KG = S_Biomass_G/1000) |> 
+  pivot_wider(names_from = Functional.Group, # wide format to account for 0 values
+                          values_from = Biomass_KG,
+                          values_fn = sum,
+                          values_fill = 0) |>  
+  select(Site, 
+         Transect,
+         Depth_m,
+         Habitat,
+         Aspect_descriptive,
+         `cropper/grazer`,
+         browser,
+         detritivore,
+         excavator,
+         scraper) |> 
+  rename(cropper = `cropper/grazer`) |> # simplify cropper name
+  mutate(Habitat = recode(Habitat,
+                          bommie = "lagoon",
+                          outer_reef = "outer_slope"))
+```
+
+#### Export biomass csv
+
+```{r}
+db_biom <- write.csv(fg_biom_wide, "herb_biomass.csv")
+```
+
+## Species richness
+
+database for iNEXT analysis
+
+```{r}
+fg_sprich <- db_master |> 
+  filter(Functional.Group == "browser" |
+           Functional.Group == "cropper/grazer" |
+           Functional.Group == "detritivore" |
+           Functional.Group == "excavator" |
+           Functional.Group == "scraper") |> 
+  filter(Family != "Chanidae" & # remove families mislabelled as herbivores
+           Family != "Ostraciidae" &
+           Family != "Pomacentridae" &
+           Family != "Tetraodontidae") |> 
+  select(Site,
+         Transect,
+         Binomial,
+         Number,
+         Depth_m,
+         Habitat,
+         Aspect_descriptive,
+         Functional.Group) |> 
+  mutate(Habitat = recode(Habitat,
+                          bommie = "lagoon",
+                          outer_reef = "outer_slope"),
+        New_ID = factor(paste(Site,
+                               Transect,
+                               Depth_m,
+                               Habitat,
+                               Aspect_descriptive,
+                               sep = "|")))
+```
+
+### species per site, depth, slope, habitat
+
+```{r}
+sp_count <-
+  fg_sprich |> 
+  group_by(New_ID, 
+           Binomial) |> 
+  dplyr::summarise(Count = sum(Number)) |> 
+  ungroup()
+```
+
+### Long to wide format
+
+```{r}
+sp_count_wide <- 
+sp_count |> 
+  pivot_wider(names_from = Binomial,
+              values_from = Count,
+              values_fill = 0) 
+```
+
+### Remove column names cause iNEXT wont run with categorical
+
+```{r}
+sp_count_wide_v2 <-
+sp_count_wide |> 
+  column_to_rownames("New_ID") |> 
+  t() # transpose to make site columns and species rows
+```
+
+### run iNEXT
+
+```{r}
+sprich_inext <- sp_count_wide_v2 |> 
+  iNEXT(q = c(0, 1),
+        datatype = "abundance",
+        endpoint = 1000,
+        nboot = 100)
+
+#sprich_inext$AsyEst
+```
+
+### Separate species richness only
+
+```{r}
+spr_asym <- sprich_inext$AsyEst |> 
+  filter(Diversity == "Species richness")
+```
+
+### Separate ID column to separate variable columns
+
+```{r}
+spr_asym_wide <- 
+spr_asym |> 
+  separate_wider_delim(Assemblage,
+                       delim = "|",
+                       names = c("Site",
+                                 "Transect",
+                                 "Depth_m",
+                                 "Habitat",
+                                 "Aspect")) |> 
+  mutate(Site = factor(Site),
+         Habitat = factor(Habitat),
+         Aspect = factor(Aspect),
+         Depth_m = as.numeric(Depth_m))
+```
+
+#### export sprich csv
+
+```{r}
+db_spr_asym <- write.csv(spr_asym_wide, "herb_sprich.csv")
+```
+
+## Assemblage
+
+```{r}
+fg_assem <- 
+  db_master |> 
+  filter(Family != "Chanidae" & # remove families mislabelled as herbivores
+           Family != "Ostraciidae" &
+           Family != "Pomacentridae" &
+           Family != "Tetraodontidae") |> 
+  select(Site,
+        # Transect,
+         Genus,
+         Species,
+         Number,
+         Depth_m,
+         Aspect_descriptive,
+         Functional.Group) |> 
+    filter(Functional.Group == "browser" |
+           Functional.Group == "cropper/grazer" |
+           Functional.Group == "detritivore" |
+           Functional.Group == "excavator" |
+           Functional.Group == "scraper") |> 
+  mutate(Species_2 = factor(paste(Genus, # make one column for species 
+                                  Species, 
+                                  sep = "_")),
+         Depth_group = factor(case_when(Depth_m < 30 ~ "Shallow",
+                                        Depth_m >= 30 & Depth_m < 60 ~ "Upper_mesophotic",
+                                        Depth_m >=60 & Depth_m < 100 ~ "Lower_mesophotic" )),
+         Slope_group = factor(case_match(Aspect_descriptive,
+                                         "flat" ~ "Flat",
+                                         "wall" ~ "Wall",
+                                         c("gentle_slope",
+                                           "moderate_slope",
+                                           "steep_slope") ~ "Slope")))
+```
+
+## Group according to site, depth, slope
+
+```{r}
+fg_assem_v2 <- 
+fg_assem |> 
+  group_by(Species_2,
+           Depth_group,
+           Slope_group, 
+           Site,
+           Aspect_descriptive) |> 
+  summarise(Sum = sum(Number)) |> 
+  ungroup()
+```
+
+## Long tow to wide format
+
+```{r}
+fg_assem_wide <- 
+fg_assem_v2 |> pivot_wider(names_from = Species_2, # wide format to account for 0 values
+                          values_from = Sum,
+                          values_fn = sum,
+                        values_fill = 0)
+```
+
+### export assem csv
+
+```{r}
+db_assem <- write.csv(fg_assem_wide, "herb_assem.csv")
+```

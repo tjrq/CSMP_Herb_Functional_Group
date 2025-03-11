@@ -1,0 +1,1356 @@
+---
+title: "biomass_results_plots"
+format: html
+editor: visual
+---
+
+# HERBIVORES
+
+## exceedence probability
+
+```{r}
+b_mod_herbs_2 |> as_draws_df() |> 
+  dplyr::select(matches("^b_.*")) |> 
+  exp() |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl= ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+## depth
+
+## newdata herbs
+
+```{r}
+depth_b_newdata <- with(fg_biom,
+                 data.frame(Depth_m = seq(min(Depth_m),
+                                          max(Depth_m),
+                                          length = 100)))
+```
+
+## predict herbs
+
+```{r}
+herbs_b_depth_pred <- b_mod_herbs_2 |> 
+  emmeans(~ Depth_m, 
+          at = depth_b_newdata, 
+          type = "link") |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp_biom = exp(.value)) |> 
+  dplyr::select(-.chain,
+                -.iteration,
+                -.value) |> 
+  summarise_draws(median, 
+                  HDInterval::hdi) |> 
+  as.data.frame()
+```
+
+## herbs depth plot
+
+```{r}
+p_depth_allherbs_B <-
+herbs_b_depth_pred |> 
+  ggplot(aes(y = median,
+             x = Depth_m)) +
+    geom_point(data = fg_biom,
+             aes(y = herbs),
+             size = 2.5, 
+             shape = 21,
+             color = "#8AA17D",
+             fill = "#8AA17D",
+             alpha = 0.3) +
+  geom_line(linewidth = 2,
+            color = "#8AA17D") +
+  geom_ribbon(aes(ymin = lower,
+                  ymax = upper),
+              fill = "#8AA17D",
+              color = "#8AA17D",
+              alpha = 0.6) +
+  scale_y_continuous(expression(Biomass~(kg.150m^-2)),
+                       limits = c(0, 40),
+  breaks = seq(0, 40, by = 10)) +
+  scale_x_continuous(name = "",
+                     breaks = seq(0, 100, by = 20)) +
+  theme_classic() +
+  ggtitle("Total herbivores") +
+     theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        plot.title = element_text(size = 18)) +
+    geom_image(data = tibble(Depth_m = 90,
+                           median = 38),
+             aes(image = ("naso.png")),
+             size = 0.30) +
+  geom_image(data = tibble(Depth_m = 90,
+                           median = 30),
+             aes(image = ("ctenochaetus.png")),
+             size = 0.30) +
+   geom_image(data = tibble(Depth_m = 70,
+                           median = 38),
+             aes(image = ("scarus.png")),
+             size = 0.30) +
+   geom_image(data = tibble(Depth_m = 70,
+                           median = 30),
+             aes(image = ("chlorurus.png")),
+             size = 0.30) +
+  theme(legend.position = "none")
+```
+
+## slope
+
+## herbs slope newdata
+
+```{r}
+herbs_nd_slope_b <- b_mod_herbs_2 |> 
+  emmeans(~ Aspect_descriptive, 
+          type = "link") |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp_biom = exp(.value)) |> 
+  dplyr::select(-.chain,
+                -.iteration,
+                -.value) |> 
+  summarise_draws(median, 
+                  HDInterval::hdi) |> 
+  as.data.frame()
+```
+
+## herbs slope plot
+
+```{r}
+p_slope_allherbs_B <- 
+herbs_nd_slope_b |> 
+  ggplot(aes(x = Aspect_descriptive,
+             y = median)) +
+  geom_pointrange(aes(ymin = lower,
+                      ymax = upper),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#8AA17D",
+                  fill = "#8AA17D") +
+  scale_y_continuous(expression(Biomass~(kg.150m^-2)),
+                     limits = c(0, 5),
+                     breaks = seq(0, 5, by = 2.5)) +
+  scale_x_discrete(name = "") +
+  theme_classic() +
+    ggtitle("Total herbivores") +
+     theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Aspect_descriptive = 5,
+                           median = 4.8),
+             aes(image = "naso.png"),
+             size = 0.30) +
+  geom_image(data = tibble(Aspect_descriptive = 5,
+                           median = 3.8),
+             aes(image = "ctenochaetus.png"),
+             size = 0.30) +
+  geom_image(data = tibble(Aspect_descriptive = 4,
+                           median = 4.8),
+             aes(image = "scarus.png"),
+             size = 0.30) +
+  geom_image(data = tibble(Aspect_descriptive = 4,
+                           median = 3.8),
+             aes(image = "chlorurus.png"),
+             size = 0.30)
+```
+
+## slope pairwise
+
+```{r}
+b_mod_herbs_2  |> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85) 
+```
+
+## plot slope contrasts
+
+```{r}
+biom_slope_pair <-b_mod_herbs_2 |> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) 
+  
+ p_biom_slope_pair <- ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = biom_slope_pair |> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = biom_slope_pair |> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#8AA17D",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  scale_x_discrete(name = "") +
+  scale_y_continuous(name = "",
+                   trans = scales::log2_trans()) +
+  ggtitle("Biomass") +
+  theme(axis.title.x = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        plot.title = element_text(size = 18))
+```
+
+
+# CROPPERS
+
+## exceedance probability
+
+```{r}
+b_mod_crop |> as_draws_df() |> 
+  dplyr::select(matches("^b_.*")) |> 
+  exp() |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl= ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+    filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+## depth
+
+## predict crops
+
+```{r}
+crop_depth_pred_B <- b_mod_crop |> 
+  emmeans(~ Depth_m, 
+          at = depth_b_newdata, 
+          type = "link") |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp_biom = exp(.value)) |> 
+  dplyr::select(-.chain,
+                -.iteration,
+                -.value) |> 
+  summarise_draws(median, 
+                  HDInterval::hdi) |> 
+  as.data.frame()
+```
+
+## crop detph plot
+
+```{r}
+p_depth_crop_B <- 
+crop_depth_pred_B |> 
+  ggplot(aes(y = median,
+             x = Depth_m)) +
+    geom_point(data = fg_abun,
+             aes(y = cropper),
+             size = 2.5,
+             shape = 21,
+             color = "#DDD487",
+             fill = "#DDD487",
+             alpha = 0.3) +
+  geom_line(linewidth = 2,
+            color = "#DDD487") +
+  geom_ribbon(aes(ymin = lower,
+                  ymax = upper),
+              fill = "#DDD487",
+              color = "#DDD487",
+              alpha = 0.6) +
+  scale_y_continuous(expression(Biomass~(kg.150m^-2)),
+                       limits = c(0, 40),
+    breaks = seq(0, 40, by = 10)) +
+  #scale_x_continuous(name = "",
+   #                  breaks = seq(0, 80, by = 20)) +
+  theme_classic() +
+  ggtitle("Croppers") +
+  theme(axis.title.y=element_text(size = 15),
+        axis.text.y=element_text(size = 12),
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Depth_m = 90,
+                           median = 38),
+             aes(image = "siganid.png"),
+             size = 0.30) 
+```
+
+## slope
+
+## crops slope newdata
+
+```{r}
+crop_nd_slope_b <- b_mod_crop |> 
+  emmeans(~ Aspect_descriptive, 
+          type = "link") |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp_biom = exp(.value)) |> 
+  dplyr::select(-.chain,
+                -.iteration,
+                -.value) |> 
+  summarise_draws(median, 
+                  HDInterval::hdi) |> 
+  as.data.frame()
+```
+
+
+## crops slope plot
+
+```{r}
+p_slope_crop_B <- 
+crop_nd_slope_b |> 
+  ggplot(aes(x = Aspect_descriptive,
+             y = median)) +
+  geom_pointrange(aes(ymin = lower,
+                      ymax = upper),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#DDD487",
+                  fill = "#DDD487") +
+  scale_y_continuous(expression(Biomass~(kg.150m^-2)),
+                     limits = c(0, 20),
+                     breaks = seq(0, 20, by = 5)) +
+  scale_x_discrete(name = "") +
+  theme_classic() +
+    ggtitle("Croppers") +
+      theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Aspect_descriptive = 5,
+                           median = 19),
+             aes(image = "siganid.png"),
+             size = 0.30)
+```
+
+## slope pairwise
+
+```{r}
+b_mod_crop|> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+## plot pairwise
+
+```{r}
+crop_biom_slope_pair <- b_mod_crop |> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) 
+  
+ p_crop_biom_slope_pair <- ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = crop_biom_slope_pair|> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = crop_biom_slope_pair|> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#DDD487",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  scale_x_discrete(name = "") +
+  scale_y_continuous(name = "",
+                   trans = scales::log2_trans()) +
+  ggtitle("Croppers") +
+  theme(axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.title.x = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+# DETRITIVORES
+
+## exceedance probability
+
+```{r}
+b_mod_det |> as_draws_df() |> 
+  dplyr::select(matches("^b_.*")) |> 
+  exp() |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl= ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+    filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+## depth
+
+## predict det
+
+```{r}
+det_depth_pred_B <- b_mod_det |> 
+  emmeans(~ Depth_m, 
+          at = depth_b_newdata, 
+          type = "link") |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp_biom = exp(.value)) |> 
+  dplyr::select(-.chain,
+                -.iteration,
+                -.value) |> 
+  summarise_draws(median, 
+                  HDInterval::hdi) |> 
+  as.data.frame()
+```
+
+## det depth plot
+
+```{r}
+p_depth_det_B <- 
+det_depth_pred_B |> 
+  ggplot(aes(y = median,
+             x = Depth_m)) +
+    geom_point(data = fg_biom,
+             aes(y = detritivore),
+             size = 2.5,
+             shape = 21,
+             color = "#BFB59E",
+             fill = "#BFB59E",
+             alpha = 0.3) +
+  geom_line(linewidth = 2,
+            color = "#BFB59E") +
+  geom_ribbon(aes(ymin = lower,
+                  ymax = upper),
+              fill = "#BFB59E",
+              color = "#BFB59E",
+              alpha = 0.6) +
+  scale_y_continuous(name = "",
+                       limits = c(0, 40),
+    breaks = seq(0, 40, by = 10)) +
+  scale_x_continuous(name = "",
+                     breaks = seq(0, 80, by = 20)) +
+  theme_classic() +
+    ggtitle("Detritivores") +
+   theme(axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Depth_m = 90,
+                           median = 38),
+             aes(image = "ctenochaetus.png"),
+             size = 0.30) 
+```
+
+## slope
+
+## det slope newdata
+
+```{r}
+det_nd_slope_b <- b_mod_det |> 
+  emmeans(~ Aspect_descriptive, 
+          type = "link") |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp_biom = exp(.value)) |> 
+  dplyr::select(-.chain,
+                -.iteration,
+                -.value) |> 
+  summarise_draws(median, 
+                  HDInterval::hdi) |> 
+  as.data.frame()
+```
+
+
+## det slope plot
+
+```{r}
+p_slope_det_B <- 
+det_nd_slope_b |> 
+  ggplot(aes(x = Aspect_descriptive,
+             y = median)) +
+  geom_pointrange(aes(ymin = lower,
+                      ymax = upper),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#BFB59E",
+                  fill = "#BFB59E") +
+  scale_y_continuous(name = "",
+                     limits = c(0, 2),
+                     breaks = seq(0, 2, by = 1)) +
+  scale_x_discrete(name = "") +
+  theme_classic() +
+    ggtitle("Detritivores") +
+         theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Aspect_descriptive = 5,
+                           median = 1.8),
+             aes(image = "ctenochaetus.png"),
+             size = 0.30)
+```
+
+## slope pairwise
+
+```{r}
+b_mod_det |> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85)
+
+```
+
+## slope pairwise
+
+```{r}
+b_mod_det|> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+## plot pairwise
+
+```{r}
+det_biom_slope_pair <- b_mod_det |> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) 
+  
+ p_det_biom_slope_pair <- ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = det_biom_slope_pair|> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = det_biom_slope_pair|> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#BFB59E",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  scale_x_discrete(name = "") +
+  scale_y_continuous(name = "",
+                   trans = scales::log2_trans()) +
+  ggtitle("Detritivores") +
+  theme(axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.title.x = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+# BROWSERS
+
+## exceedance probability
+
+```{r}
+b_mod_brow |> as_draws_df() |> 
+  dplyr::select(matches("^b_.*")) |> 
+  exp() |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl= ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+    filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+## depth
+
+## predict brow
+
+```{r}
+brow_depth_pred_B <- b_mod_brow |> 
+  emmeans(~ Depth_m, 
+          at = depth_b_newdata, 
+          type = "link") |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp_biom = exp(.value)) |> 
+  dplyr::select(-.chain,
+                -.iteration,
+                -.value) |> 
+  summarise_draws(median, 
+                  HDInterval::hdi) |> 
+  as.data.frame()
+```
+
+## brow depth plot
+
+```{r}
+p_depth_brow_B <- 
+brow_depth_pred_B |> 
+  ggplot(aes(y = median,
+             x = Depth_m)) +
+    geom_point(data = fg_biom,
+             aes(y = browser),
+             size = 2.5,
+             shape = 21,
+             color = "#929FBD",
+             fill = "#929FBD",
+             alpha = 0.3) +
+  geom_line(linewidth = 2,
+            color = "#929FBD") +
+  geom_ribbon(aes(ymin = lower,
+                  ymax = upper),
+              fill = "#929FBD",
+              color = "#929FBD",
+              alpha = 0.6) +
+  scale_y_continuous(name = "",
+                       limits = c(0, 40),
+    breaks = seq(0, 40, by = 10)) +
+  scale_x_continuous(name = "",
+                     breaks = seq(0, 100, by = 20)) +
+  theme_classic() +
+  ggtitle("Browsers") +
+   theme(axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Depth_m = 90,
+                           median = 38),
+             aes(image = "naso.png"),
+             size = 0.30) 
+  
+```
+
+## slope
+
+## brow slope newdata
+
+```{r}
+brow_nd_slope_B <- b_mod_brow |> 
+  emmeans(~ Aspect_descriptive, 
+          type = "link") |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp_biom = exp(.value)) |> 
+  dplyr::select(-.chain,
+                -.iteration,
+                -.value) |> 
+  summarise_draws(median, 
+                  HDInterval::hdi) |> 
+  as.data.frame()
+```
+
+
+## brow slope plot
+
+```{r}
+p_slope_brow_B <- 
+brow_nd_slope_B |> 
+  ggplot(aes(x = Aspect_descriptive,
+             y = median)) +
+  geom_pointrange(aes(ymin = lower,
+                      ymax = upper),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#929FBD",
+                  fill = "#929FBD") +
+  scale_y_continuous(name = "",
+                     limits = c(0, 15),
+                     breaks = seq(0, 15, by = 5)) +
+  scale_x_discrete(name = "") +
+  theme_classic() +
+  ggtitle("Browsers") +
+     theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Aspect_descriptive = 5,
+                           median = 14),
+             aes(image = "naso.png"),
+             size = 0.30)
+```
+
+## slope pairiwse
+
+```{r}
+b_mod_brow |> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85)
+
+```
+
+## plot pairwise
+
+```{r}
+brow_biom_slope_pair <- b_mod_brow  |> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) 
+  
+ p_brow_biom_slope_pair <- ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = brow_biom_slope_pair|> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data =brow_biom_slope_pair|> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#929FBD",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  scale_x_discrete(name = "Constrast: slope orientation") +
+  scale_y_continuous(name = "",
+                   trans = scales::log2_trans()) +
+  ggtitle("Browsers") +
+  theme(axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+# EXCAVATORS
+
+## exceendence probaility
+
+```{r}
+b_mod_exc |> as_draws_df() |> 
+  dplyr::select(matches("^b_.*")) |> 
+  exp() |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl= ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+    filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+## depth
+
+## predict exc
+
+```{r}
+exc_depth_pred_B <- b_mod_exc |> 
+  emmeans(~ Depth_m, 
+          at = depth_b_newdata, 
+          type = "link") |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp_biom = exp(.value)) |> 
+  dplyr::select(-.chain,
+                -.iteration,
+                -.value) |> 
+  summarise_draws(median, 
+                  HDInterval::hdi) |> 
+  as.data.frame()
+```
+
+
+## exc depth plot
+
+```{r}
+p_depth_exc_B <- 
+exc_depth_pred_B |> 
+  ggplot(aes(y = median,
+             x = Depth_m)) +
+    geom_point(data = fg_biom,
+             aes(y = excavator),
+             size = 2.5,
+             shape = 21,
+             color = "#E29297",
+             fill = "#E29297",
+             alpha = 0.3) +
+  geom_line(linewidth = 2,
+            color = "#E29297") +
+  geom_ribbon(aes(ymin = lower,
+                  ymax = upper),
+              fill = "#E29297",
+              color = "#E29297",
+              alpha = 0.6) +
+  scale_y_continuous(expression(Biomass~(kg.150m^-2)),
+                       limits = c(0, 40),
+    breaks = seq(0, 40, by = 10)) +
+  scale_x_continuous(name = "Depth (m)",
+                     breaks = seq(0, 100, by = 20)) +
+  theme_classic() +
+  ggtitle("Excavators") +
+     theme(axis.title=element_text(size = 15),
+        axis.text=element_text(size = 12),
+      plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Depth_m = 90,
+                           median = 38),
+             aes(image = "chlorurus.png"),
+             size = 0.30) 
+  
+```
+
+## slope
+
+## exc slope newdata
+
+```{r}
+exc_nd_slope_b <- b_mod_exc |> 
+  emmeans(~ Aspect_descriptive, 
+          type = "link") |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp_biom = exp(.value)) |> 
+  dplyr::select(-.chain,
+                -.iteration,
+                -.value) |> 
+  summarise_draws(median, 
+                  HDInterval::hdi) |> 
+  as.data.frame()
+```
+
+## exc slope plot
+
+```{r}
+p_slope_exc_b <- 
+exc_nd_slope_b |> 
+  ggplot(aes(x = Aspect_descriptive,
+             y = median)) +
+  geom_pointrange(aes(ymin = lower,
+                      ymax = upper),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#E29297",
+                  fill = "#E29297") +
+  scale_y_continuous(expression(Biomass~(kg.150m^-2)),
+                     limits = c(0, 15),
+                     breaks = seq(0, 15, by = 5)) +
+  scale_x_discrete(name = "Slope orientation") +
+  theme_classic() +
+    ggtitle("Excavators") +
+  theme(axis.text.x = element_text(angle = 20,
+                                 vjust = 0.90,
+                                 hjust = 0.70,
+                                 size = 12),
+        axis.title = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        plot.title = element_text(size = 18))  +
+  geom_image(data = tibble(Aspect_descriptive = 5,
+                           median = 14),
+             aes(image = "chlorurus.png"),
+             size = 0.30)
+```
+
+## slope pairwise
+
+```{r}
+b_mod_exc|> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+## plot pairwise
+
+```{r}
+exc_biom_slope_pair <- b_mod_exc|> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) 
+  
+ p_exc_biom_slope_pair <- ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = exc_biom_slope_pair|> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = exc_biom_slope_pair|> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#E29297",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  scale_x_discrete(name = "Contrast: slope orientation") +
+  scale_y_continuous(name = "Scaled effect size",
+                   trans = scales::log2_trans()) +
+  ggtitle("Excavators") +
+  theme(
+        axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+# SCRAPERS
+
+## exceedance probability
+
+```{r}
+b_mod_scra |> as_draws_df() |> 
+  dplyr::select(matches("^b_.*")) |> 
+  exp() |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl= ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+    filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+## depth
+
+## predict scra
+
+```{r}
+scra_depth_pred_B  <- b_mod_scra |> 
+  emmeans(~ Depth_m, 
+          at = depth_b_newdata, 
+          type = "link") |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp_biom = exp(.value)) |> 
+  dplyr::select(-.chain,
+                -.iteration,
+                -.value) |> 
+  summarise_draws(median, 
+                  HDInterval::hdi) |> 
+  as.data.frame()
+```
+
+## scra depth plot
+
+```{r}
+p_depth_scra_B <- 
+scra_depth_pred_B  |> 
+  ggplot(aes(y = median,
+             x = Depth_m)) +
+    geom_point(data = fg_biom,
+             aes(y = scraper),
+             size = 2.5,
+             shape = 21,
+             color = "#BFAECF",
+             fill = "#BFAECF",
+             alpha = 0.3) +
+  geom_line(linewidth = 2,
+            color = "#BFAECF") +
+  geom_ribbon(aes(ymin = lower,
+                  ymax = upper),
+              fill = "#BFAECF",
+              color = "#BFAECF",
+              alpha = 0.6) +
+  scale_y_continuous(name = "",
+                       limits = c(0, 40),
+    breaks = seq(0, 40, by = 10)) +
+  scale_x_continuous(name = "Depth (m)",
+                     breaks = seq(0, 100, by = 20)) +
+  theme_classic() +
+    ggtitle("Scrapers") +
+     theme(axis.title.x =element_text(size = 15),
+        axis.text.x=element_text(size = 12),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+      plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Depth_m = 90,
+                           median = 38),
+             aes(image = "scarus.png"),
+             size = 0.30) 
+
+```
+
+## slope
+
+## scra slope newdata
+
+```{r}
+scra_nd_slope_b <- b_mod_scra |> 
+  emmeans(~ Aspect_descriptive, 
+          type = "link") |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp_biom = exp(.value)) |> 
+  dplyr::select(-.chain,
+                -.iteration,
+                -.value) |> 
+  summarise_draws(median, 
+                  HDInterval::hdi) |> 
+  as.data.frame()
+
+```
+
+
+## scra slope plots
+
+```{r}
+p_slope_scra_b <- 
+scra_nd_slope_b |> 
+  ggplot(aes(x = Aspect_descriptive,
+             y = median)) +
+  geom_pointrange(aes(ymin = lower,
+                      ymax = upper),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#BFAECF",
+                  fill = "#BFAECF") +
+  scale_y_continuous(name = "",
+                     limits = c(0, 10),
+                     breaks = seq(0, 10, by = 5)) +
+  scale_x_discrete(name = "Slope orientation") +
+  theme_classic() +
+    ggtitle("Scrapers") +
+ theme(axis.text.x = element_text(angle = 20,
+                                 vjust = 0.90,
+                                 hjust = 0.70,
+                                 size = 12),
+        axis.title = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Aspect_descriptive = 5,
+                           median = 9),
+             aes(image = "scarus.png"),
+             size = 0.30)
+```    
+
+## slope pairwise
+
+```{r}
+b_mod_scra|> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+## plot pairwise
+
+```{r}
+scra_biom_slope_pair <- b_mod_scra|> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) 
+  
+ p_scra_biom_slope_pair  <- ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = scra_biom_slope_pair |> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = scra_biom_slope_pair |> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#BFAECF",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  scale_x_discrete(name = "") +
+  scale_y_continuous(name = "Scaled effect size",
+                   trans = scales::log2_trans()) +
+  ggtitle("Scrapers") +
+  theme(axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.title.x = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+# COMBINED DEPTH PLOTS
+
+```{r}
+p_biom_depth_all <-
+(p_depth_allherbs_B +  p_depth_brow_B) /
+  (p_depth_crop_B + p_depth_det_B) /
+  (p_depth_exc_B + p_depth_scra_B) + 
+  plot_annotation(tag_levels = "a") &
+  theme(plot.tag = element_text(size = 15))
+```
+## ggsave
+
+```{r}
+ggsave("Fig. 5. biomass_depth.jpeg",
+       plot = p_biom_depth_all, 
+       dpi = 600, 
+       height = 9.5, 
+       width = 9.5, 
+       units = "in")
+```
+
+# COMBINED SLOPE PLOTS
+
+```{r}
+p_biom_slope_all <-
+(p_slope_allherbs_B +  p_slope_brow_B) /
+  (p_slope_crop_B + p_slope_det_B) /
+  (p_slope_exc_b + p_slope_scra_b) + 
+  plot_annotation(tag_levels = "a") &
+  theme(plot.tag = element_text(size = 15))
+```
+
+## ggsave
+
+```{r}
+ggsave("Fig. 6. biomass_slope.jpeg",
+       plot = p_biom_slope_all, 
+       dpi = 600, 
+       height = 10, 
+       width = 10, 
+       units = "in")
+```
+
+
+# COMBINE SLOPE PAIRWISE FOR ALL HERBIVORES
+
+```{r}
+p_herbs_pairwise <-
+ p_sprich_slope_pair +  p_abun_slope_pair + p_biom_slope_pair +
+  plot_annotation(tag_levels = "a") &
+  theme(plot.tag = element_text(size = 15))
+```
+
+## ggsave
+
+```{r}
+ggsave("Fig. S1. all_herbs_pairwise.jpeg",
+       plot = p_herbs_pairwise, 
+       dpi = 600, 
+       height = 6, 
+       width = 10, 
+       units = "in")
+```
+
+# COMBINE SLOPE PAIRWISE
+
+```{r}
+p_fg_biom_slope_pair <- 
+(p_brow_biom_slope_pair + p_crop_biom_slope_pair + p_det_biom_slope_pair) /
+  (p_exc_biom_slope_pair + p_scra_biom_slope_pair) +
+  plot_annotation(tag_levels = "a") &
+  theme(plot.tag = element_text(size = 15))
+```
+
+## ggsave
+
+```{r}
+ggsave("Fig. S3. fg_biom_slope_pair.jpeg",
+       plot =p_fg_biom_slope_pair, 
+       dpi = 600, 
+       height = 7, 
+       width = 10, 
+       units = "in")
+```
+
+# PLOT LENGTH
+
+## std error of the mean
+
+```{r}
+std_error <- function(x) sd(x)/sqrt(length(x))
+```
+
+
+```{r}
+p_mean_length <-
+fg_biom_long |> 
+  filter(Functional.Group == "browser" |
+           Functional.Group == "cropper/grazer" |
+           Functional.Group == "detritivore" |
+           Functional.Group == "excavator" |
+           Functional.Group == "scraper") |> 
+  mutate(Depth_bin = factor(case_when(Depth_m < 11 ~ '10m',
+                                      Depth_m >= 11  & Depth_m < 21 ~ '20m', 
+                                      Depth_m >= 21  & Depth_m < 31 ~ '30m', 
+                                      Depth_m >= 31  & Depth_m < 41 ~ '40m', 
+                                      Depth_m >= 41  & Depth_m < 51 ~ '50m', 
+                                      Depth_m >= 51  & Depth_m < 61 ~ '60m', 
+                                      Depth_m >= 61  & Depth_m < 71 ~ '70m', 
+                                      Depth_m >= 71  & Depth_m < 81 ~ '80m', 
+                                      Depth_m >= 81  & Depth_m < 91 ~ '90m', 
+                                    Depth_m >= 91  ~ '100m'), ordered = TRUE)) |> 
+  mutate(Depth_bin = factor(Depth_bin,
+         levels = c("10m",
+                    "20m",
+                    "30m",
+                    "40m",
+                    "50m",
+                    "60m",
+                    "70m",
+                    "80m",
+                    "90m",
+                    "100m"))) |> 
+  mutate(Functional.Group = recode(Functional.Group,
+                                   browser = "Browser",
+                                   `cropper/grazer` = "Cropper",
+                                   detritivore = "Detritivore",
+                                   excavator = "Excavator",
+                                   scraper = "Scraper")) |> 
+  group_by(Functional.Group,
+           Depth_bin) |> 
+  summarise(MEAN = mean(Length_cm),
+            STDE = std_error(Length_cm)) |> 
+  ggplot(aes(x = Depth_bin,
+             y = MEAN)) +
+  geom_pointrange(aes(ymin = MEAN - STDE,
+                      ymax = MEAN + STDE,
+                  color = Functional.Group)) +
+  facet_wrap(~ Functional.Group,
+             scales = "free") +
+  scale_color_manual(values = c("#929FBD",
+                                "#DDD487",
+                                "#BFB59E",
+                               "#E29297",
+                               "#BFAECF")) +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90,
+                                 vjust = 0.85,
+                                 hjust = 0.70,
+                                 size = 12),
+        axis.title = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        legend.position = "none",
+        strip.text = element_text(size = 15)) +
+  scale_y_continuous(expression(Length~(cm)))
+```
+
+## ggsave
+
+```{r}
+ggsave("Fig. SX. mean_length.jpeg",
+       plot = p_mean_length, 
+       dpi = 600, 
+       height = 6, 
+       width = 10, 
+       units = "in")
+```

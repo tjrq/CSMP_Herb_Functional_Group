@@ -1,0 +1,414 @@
+---
+title: "Tests_ZI_Negbinom"
+format: html
+editor: visual
+---
+
+# ALL HERBIVORES
+
+## define formula
+
+```{r}
+herbs_form_zi <- 
+  bf(herbs ~ Depth_m +
+       Aspect_descriptive +
+       (1 | Site) + 
+       (1 | Habitat),
+     family = zero_inflated_negbinomial(link = "log"))
+```
+
+## get prior
+
+```{r}
+get_prior(herbs_form_zi, data = fg_abun)
+```
+
+
+## Weakly informative priors
+
+```{r}
+herb_priors_zi <- prior(normal(1.2, 2), class = "Intercept") +
+  prior(normal(0, 1), class = "b") +
+  prior(gamma(0.01, 0.01), class = "shape") +
+  prior(student_t(3, 0, 2), class = "sd") +
+  prior(logistic(0, 1), class = "zi")
+```
+
+## Herbs prior only
+
+```{r}
+#| cache: true
+herbs_prior_mod_zi <- brm(herbs_form_zi,
+                    data = fg_abun,
+                    prior = herb_priors_zi,
+                    sample_prior = "only",
+                    iter = 5000,
+                    warmup = 1000,
+                    chains = 3,
+                    cores = 6,
+                    thin = 5,
+                    control = list(adapt_delta = 0.99,
+                                   max_treedepth = 20),
+                    refresh = 0)
+```
+
+## Prior evaluation
+
+```{r}
+herbs_prior_mod_zi |> conditional_effects() |> 
+  plot(points = TRUE,
+       ask = FALSE,
+       plot = FALSE) |> 
+  wrap_plots() & 
+  scale_y_log10()
+```
+
+## Fit model
+
+```{r}
+#| cache: true
+herbs_mod_zi <- update(herbs_prior_mod_zi,
+                  sample_prior = "yes",
+                    iter = 10000,
+                    warmup = 2000,
+                    refresh = 2000)
+```
+
+## chain diagnostics
+
+```{r}
+par_herb_zi <- herbs_mod_zi |>  
+  get_variables() |> 
+  str_subset("^b_.*")
+
+# trace
+herbs_mod_zi|> mcmc_plot(type = "trace",
+                         par =par_herb_zi)
+
+# autocorr
+herbs_mod_zi  |> mcmc_plot(type = "acf_bar",
+                         par = par_herb_zi)
+
+# rhat
+herbs_mod_zi |> mcmc_plot(type = "rhat_hist")
+
+# ess
+herbs_mod_zi |> mcmc_plot(type = "neff_hist")
+```
+
+### Residuals
+
+```{r}
+herbs_resids_zi <- make_brms_dharma_res(herbs_mod_zi)
+
+# qqplot
+crop_resids |> testUniformity()
+
+# residplot
+herbs_resids_zi |> plotResiduals()
+
+# testdisp
+herbs_resids_zi |> testDispersion()
+```
+
+# CROPPERS
+
+## Define formula
+
+```{r}
+crop_formula_zi <- 
+  bf(cropper ~ Depth_m +
+       Aspect_descriptive +
+       (1| Site) +
+       (1 | Habitat),
+     family = zero_inflated_negbinomial(link = "log"))
+```
+
+## Weakly informative priors
+
+```{r}
+crop_priors_zi <- prior(normal(1.2, 2), class = "Intercept") +
+  prior(normal(0, 1), class = "b") +
+  prior(gamma(0.01, 0.01), class = "shape") +
+  prior(student_t(3, 0, 2), class = "sd") +
+  prior(logistic(0, 1), class = "zi")
+```
+
+## crop prior only
+
+```{r}
+#| cache: true
+crop_prior_mod_zi <- brm(crop_formula_zi,
+                    data = fg_abun,
+                    prior = crop_priors_zi,
+                    sample_prior = "only",
+                    iter = 5000,
+                    warmup = 1000,
+                    chains = 3,
+                    cores = 6,
+                    thin = 5,
+                    control = list(adapt_delta = 0.99,
+                                   max_treedepth = 20),
+                    refresh = 0)
+```
+
+# Fit model
+
+```{r}
+#| cache: true
+crop_mod_zi <- update(crop_prior_mod_zi,
+                  sample_prior = "yes",
+                    iter = 10000,
+                    warmup = 2000,
+                    refresh = 2000)
+```
+
+## chain diagnostics
+
+```{r}
+par_crop_zi <- crop_mod_zi |>  
+  get_variables() |> 
+  str_subset("^b_.*")
+
+# trace
+crop_mod_zi|> mcmc_plot(type = "trace",
+                         par =par_crop_zi)
+
+# autocorr
+crop_mod_zi  |> mcmc_plot(type = "acf_bar",
+                         par = par_crop_zi)
+
+# rhat
+crop_mod_zi |> mcmc_plot(type = "rhat_hist")
+
+# ess
+crop_mod_zi |> mcmc_plot(type = "neff_hist")
+```
+
+### Residuals
+
+```{r}
+crop_resids_zi <- make_brms_dharma_res(crop_mod_zi)
+
+# qqplot
+crop_resids_zi |> testUniformity()
+
+# residplot
+crop_resids_zi |> plotResiduals()
+
+# testdisp
+crop_resids_zi |> testDispersion()
+```
+
+# DETRITIVORES
+
+## Define formula
+
+```{r}
+det_form_zi <- 
+  bf(detritivore ~ Depth_m +
+       Aspect_descriptive +
+       (1 | Site) +
+       (1 | Habitat),
+     family = zero_inflated_negbinomial(link = "log"))
+```
+
+## weakly informative priors
+
+```{r}
+det_priors_zi <- prior(normal(0.5, 0.8), class = "Intercept") +
+  prior(normal(0, 2.2), class = "b") +
+  prior(gamma(0.01, 0.01), class = "shape") +
+  prior(student_t(3, 0 , 0.8), class = "sd") +
+  prior(logistic(0, 1), class = "zi")
+```
+
+## Dets prior only
+
+
+```{r}
+#| cache: true
+det_prior_mod_zi <- brm(det_form_zi,
+                    data = fg_abun ,
+                    prior = det_priors_zi,
+                    sample_prior = "only",
+                    iter = 5000,
+                    warmup = 1000,
+                    chains = 3,
+                    cores = 6,
+                    thin = 5,
+                    control = list(adapt_delta = 0.99,
+                                   max_treedepth = 20),
+                    refresh = 1000)
+```
+
+# Fit model
+
+```{r}
+#| cache: true
+det_mod_zi <- update(det_prior_mod_zi,
+                  sample_prior = "yes",
+                    iter = 10000,
+                    warmup = 2000,
+                    refresh = 2000)
+```
+
+## chain diagnoistcs
+
+```{r}
+par_det_zi <- det_mod_zi |>  
+  get_variables() |> 
+  str_subset("^b_.*")
+# trace
+det_mod_zi |> mcmc_plot(type = "trace",
+                         par = par_det_zi)
+# autocorr
+det_mod_zi  |> mcmc_plot(type = "acf_bar",
+                         par = par_det_zi)
+# rhat
+det_mod_zi |> mcmc_plot(type = "rhat_hist")
+# ess
+det_mod_zi  |> mcmc_plot(type = "neff_hist")
+```
+
+## Residuals
+
+```{r}
+det_resids_zi <- make_brms_dharma_res(det_mod_zi)
+# qqplot
+det_resids_zi |> testUniformity()
+# residplot
+det_resids_zi |> plotResiduals()
+# testdisp
+det_resids_zi |> testDispersion()
+```
+
+# SCRAPERS
+
+## Define formula
+
+```{r}
+scra_form_zi <- 
+  bf(scraper ~ Depth_m +
+       Aspect_descriptive +
+       (1| Site) +
+       (1 | Habitat),
+     family = zero_inflated_negbinomial(link = "log"))
+```
+
+## weakly informative priors
+
+```{r}
+scra_priors_zi <- prior(normal(2, 1), class = "Intercept") +
+  prior(normal(0, 1), class = "b") +
+  prior(gamma(0.01, 0.01), class = "shape") +
+  prior(student_t(3, 0, 1), class = "sd") +
+  prior(logistic(0, 1), class = "zi")
+```
+
+## scra prior only
+
+
+```{r}
+#| cache: true
+scra_prior_mod_zi <- brm(scra_form_zi,
+                    data = fg_abun ,
+                    prior = scra_priors_zi,
+                    sample_prior = "only",
+                    iter = 5000,
+                    warmup = 1000,
+                    chains = 3,
+                    cores = 6,
+                    thin = 5,
+                    control = list(adapt_delta = 0.99,
+                                   max_treedepth = 20),
+                    refresh = 1000)
+```
+
+# Fit model
+
+```{r}
+#| cache: true
+scra_mod_zi <- update(scra_prior_mod_zi,
+                  sample_prior = "yes",
+                    iter = 10000,
+                    warmup = 2000,
+                    refresh = 2000)
+```
+
+## residuals
+
+```{r}
+scra_resids_zi <- make_brms_dharma_res(scra_mod_zi)
+# qqplot
+scra_resids_zi |> testUniformity()
+# residplot
+scra_resids_zi |> plotResiduals()
+# testdisp
+scra_resids_zi |> testDispersion()
+```
+
+# EXCAVATORS
+
+## Define formula
+
+```{r}
+exc_form_zi <- 
+  bf(excavator ~ Depth_m +
+       Aspect_descriptive +
+       (1| Site) +
+       (1 | Habitat),
+     family = zero_inflated_negbinomial(link = "log"))
+```
+
+## weakly informative priors
+
+```{r}
+exc_priors_zi <- prior(normal(2.3, 2.7), class = "Intercept") +
+  prior(normal(0, 0.2), class = "b") +
+  prior(gamma(0.01, 0.01), class = "shape") +
+  prior(student_t(3, 0, 2.7), class = "sd") +
+  prior(logistic(0, 1), class = "zi")
+```
+
+## scra prior only
+
+
+```{r}
+#| cache: true
+exc_prior_mod_zi <- brm(exc_form_zi,
+                    data = fg_abun ,
+                    prior = exc_priors_zi,
+                    sample_prior = "only",
+                    iter = 5000,
+                    warmup = 1000,
+                    chains = 3,
+                    cores = 6,
+                    thin = 5,
+                    control = list(adapt_delta = 0.99,
+                                   max_treedepth = 20),
+                    refresh = 1000)
+```
+
+# Fit model
+
+```{r}
+#| cache: true
+exc_mod_zi <- update(exc_prior_mod_zi,
+                  sample_prior = "yes",
+                    iter = 10000,
+                    warmup = 2000,
+                    refresh = 2000)
+```
+
+## Residuals
+
+```{r}
+exc_zi_resids <- make_brms_dharma_res(exc_mod_zi) 
+# qqplot
+exc_zi_resids |> testUniformity()
+# residplot
+exc_zi_resids |> plotResiduals()
+# testdisp
+exc_zi_resids |> testDispersion()
+```

@@ -186,7 +186,12 @@ sprich_slope |>
   scale_y_continuous(Species~richness~(ind.150m^-2),
                      limits = c(0, 8),
                      breaks = seq(0, 8, by = 2)) +
-  scale_x_discrete(name = "Slope orientation") +
+  scale_x_discrete(name = "Slope orientation",
+                   labels = c("Flat",
+                              "Gentle slope",
+                              "Moderate slope",
+                              "Steep slope",
+                              "Wall")) +
   theme_classic() +
   theme(axis.text.x = element_text(angle = 20,
                                  vjust = 0.90,
@@ -264,7 +269,8 @@ sprich_slope_pair <- sprich_mod |> emmeans(~ Aspect,
 p_sprich_all <-
 p_sprich_depth / 
   p_sprich_slope /
-  p_ord3
+  p_ord3 + plot_annotation(tag_levels = "a") &
+  theme(plot.tag = element_text(size = 15))
 ```
 
 # ggsave

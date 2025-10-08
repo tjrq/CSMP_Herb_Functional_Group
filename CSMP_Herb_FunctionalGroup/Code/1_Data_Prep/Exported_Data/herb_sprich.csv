@@ -1,0 +1,436 @@
+"","Reef_2","Site","Transect","Depth_m","Habitat","Aspect","Benthic_Complexity","Diversity","Observed","Estimator","s.e.","LCL","UCL"
+"1","Ashmore","ASHM-01","T1",31,"outer_slope","moderate_slope","4","Species richness",10,13.8095238095238,7.73308791380216,10,28.966097609858
+"2","Ashmore","ASHM-01","T2",37,"outer_slope","gentle_slope","3","Species richness",5,5.58333333333333,2.81370736298064,5,11.0980984278105
+"3","Ashmore","ASHM-01","T3",38,"outer_slope","gentle_slope","2.5","Species richness",4,5.71428571428571,3.04734001698831,4,11.6869623962305
+"4","Ashmore","ASHM-01","T7",49,"outer_slope","flat","1","Species richness",1,1,0,1,1
+"5","Ashmore","ASHM-01","T8",43,"outer_slope","moderate_slope","3.5","Species richness",3,3.41666666666667,1.33338041793968,3,6.03004426351941
+"6","Ashmore","ASHM-02","T1",65,"outer_slope","gentle_slope","0","Species richness",1,1,0,1,1
+"7","Ashmore","ASHM-02","T7",37,"outer_slope","wall","2","Species richness",6,16.7142857142857,6.80458468289274,6,30.0510266225084
+"8","Ashmore","ASHM-04","T1",52,"outer_slope","moderate_slope","1","Species richness",2,2,0.287623491264661,2,2.56373168398641
+"9","Ashmore","ASHM-04","T2",45,"outer_slope","steep_slope","2","Species richness",8,15.5294117647059,7.9724451840784,8,31.1551171942193
+"10","Ashmore","ASHM-04","T3",42,"outer_slope","steep_slope","3","Species richness",6,11.5,4.5433158529843,6,20.4047354422391
+"11","Ashmore","ASHM-04","T4",38,"outer_slope","steep_slope","3","Species richness",4,4,0.713449906332238,4,5.39833612118466
+"12","Ashmore","ASHM-04","T5",32,"outer_slope","moderate_slope","3","Species richness",5,5.45833333333333,2.0111324390707,5,9.4000804820521
+"13","Ashmore","ASHM-04","T6",20,"outer_slope","gentle_slope","4","Species richness",3,3,0.518059279104879,3,4.01537752890235
+"14","Ashmore","ASHM-04","T7",17.5,"outer_slope","gentle_slope","4","Species richness",2,2,0.31446603773522,2,2.61634210832205
+"15","Betty Cay","BETT-01","T10",8.2,"outer_slope","flat","3","Species richness",3,3.88888888888889,0.86629247440076,3,5.58679093879247
+"16","Betty Cay","BETT-01","T11",8.3,"outer_slope","flat","3","Species richness",10,22.202380952381,9.47687622089028,10,40.7767170312699
+"17","Betty Cay","BETT-01","T6",40.4,"outer_slope","steep_slope","3","Species richness",2,2,0.368452949177471,2,2.72215451038541
+"18","Betty Cay","BETT-01","T7",32.3,"outer_slope","flat","5","Species richness",2,2.33333333333333,1.29444986342994,2,4.8704084454488
+"19","Betty Cay","BETT-01","T8",21.1,"outer_slope","flat","4","Species richness",2,2,0.476095228569523,2,2.93312950120763
+"20","Betty Cay","BETT-01","T9",12.6,"outer_slope","gentle_slope","3","Species richness",2,2,0.468826172262151,2,2.91888241264359
+"21","Boot","BOOT-01","T1",67,"outer_slope","moderate_slope","3","Species richness",2,2,0.422952584681651,2,2.82897183314416
+"22","Boot","BOOT-01","T2",57,"outer_slope","steep_slope","3","Species richness",2,2.33333333333333,1.03799859221536,2,4.36777319007872
+"23","Bougainville","BOUG-01","T1",65,"outer_slope","steep_slope","5","Species richness",1,1,0,1,1
+"24","Bougainville","BOUG-01","T10",20.3,"outer_slope","wall","3.5","Species richness",1,1,0,1,1
+"25","Bougainville","BOUG-01","T10",54.7,"outer_slope","steep_slope","5","Species richness",1,1,0,1,1
+"26","Bougainville","BOUG-01","T11",17.6,"outer_slope","wall","3","Species richness",2,2,0.31446603773522,2,2.61634210832205
+"27","Bougainville","BOUG-01","T12",13.8,"outer_slope","steep_slope","3","Species richness",7,20.3333333333333,7.30220957118623,7,34.645401100422
+"28","Bougainville","BOUG-01","T12",45.5,"outer_slope","steep_slope","5","Species richness",2,2.5,0.703239258393226,2,3.87832361896538
+"29","Bougainville","BOUG-01","T13",12.5,"outer_slope","wall","3.5","Species richness",3,3.95833333333333,0.752284329866682,3,5.43278352600588
+"30","Bougainville","BOUG-01","T14",9.3,"outer_slope","wall","3","Species richness",8,17.6296296296296,6.01113377390504,8,29.4112353327358
+"31","Bougainville","BOUG-01","T15",7.5,"outer_slope","wall","2","Species richness",10,11.44,4.21476517193763,10,19.7007879402915
+"32","Bougainville","BOUG-01","T16",36.4,"outer_slope","wall","5","Species richness",2,2.33333333333333,1.01517111393715,2,4.32303215479555
+"33","Bougainville","BOUG-01","T16",5.5,"outer_slope","wall","3","Species richness",7,20.8461538461538,7.30597861557024,7,35.1656088044913
+"34","Bougainville","BOUG-01","T17",3.6,"outer_slope","steep_slope","2.5","Species richness",15,16.4896551724138,3.68293501068011,15,23.7080751507484
+"35","Bougainville","BOUG-01","T17",35.1,"outer_slope","wall","5","Species richness",3,3.83333333333333,1.08937064172931,3,5.96846055693807
+"36","Bougainville","BOUG-01","T18",28.5,"outer_slope","wall","4","Species richness",1,1,0,1,1
+"37","Bougainville","BOUG-01","T19",22.3,"outer_slope","wall","3","Species richness",1,1,0,1,1
+"38","Bougainville","BOUG-01","T2",66.7,"outer_slope","wall","5","Species richness",2,2.5,0.708872343937891,2,3.88936426375476
+"39","Bougainville","BOUG-01","T4",67.8,"outer_slope","wall","5","Species richness",1,1,0,1,1
+"40","Bougainville","BOUG-01","T4",85.7,"outer_slope","wall","3.5","Species richness",1,1,0,1,1
+"41","Bougainville","BOUG-01","T5",81.9,"outer_slope","steep_slope","4","Species richness",1,1,0,1,1
+"42","Bougainville","BOUG-01","T6",58.1,"outer_slope","steep_slope","4","Species richness",3,3.83333333333333,1.17603114007421,3,6.13831201257636
+"43","Bougainville","BOUG-01","T6",76.4,"outer_slope","steep_slope","4","Species richness",1,1,0,1,1
+"44","Bougainville","BOUG-01","T7",57.8,"outer_slope","steep_slope","5","Species richness",2,2.5,0.746354777934364,2,3.96282848444074
+"45","Bougainville","BOUG-01","T8",57.2,"outer_slope","steep_slope","5","Species richness",1,1,0,1,1
+"46","Bougainville","BOUG-01","T8",66.3,"outer_slope","steep_slope","4","Species richness",3,4.5,2.00047342881477,3,8.42085587250631
+"47","Bougainville","BOUG-02","T1",67.1,"outer_slope","steep_slope","3","Species richness",2,2.33333333333333,0.889999306422257,2,4.07769992018658
+"48","Bougainville","BOUG-02","T10",52.1,"outer_slope","steep_slope","3","Species richness",3,4.5,1.6762979292103,3,7.78548356861126
+"49","Bougainville","BOUG-02","T11",47.6,"outer_slope","steep_slope","3","Species richness",1,1,0,1,1
+"50","Bougainville","BOUG-02","T13",45.8,"outer_slope","steep_slope","2.5","Species richness",2,2.33333333333333,1.24926914661069,2,4.78185586768737
+"51","Bougainville","BOUG-02","T14",45,"outer_slope","moderate_slope","3","Species richness",1,1,0,1,1
+"52","Bougainville","BOUG-02","T15",44.9,"outer_slope","wall","2.5","Species richness",1,1,0,1,1
+"53","Bougainville","BOUG-02","T18",33.1,"outer_slope","wall","3","Species richness",1,1,0,1,1
+"54","Bougainville","BOUG-02","T19",32.5,"outer_slope","steep_slope","3","Species richness",5,5.93333333333333,2.22097231684089,5,10.286359085002
+"55","Bougainville","BOUG-02","T2",67.1,"outer_slope","steep_slope","3","Species richness",2,2.5,0.690849279707758,2,3.85403970697264
+"56","Bougainville","BOUG-02","T20",31.1,"outer_slope","moderate_slope","3","Species richness",11,45.1052631578947,20.1848091489713,11,84.6667621246931
+"57","Bougainville","BOUG-02","T21",28.4,"outer_slope","wall","2.5","Species richness",4,8.5,2.23165359717358,4.12603932357053,12.8739606764295
+"58","Bougainville","BOUG-02","T22",27.3,"outer_slope","wall","2.5","Species richness",4,6.5,2.40631111725843,4,11.2162831254249
+"59","Bougainville","BOUG-02","T23",24.8,"outer_slope","steep_slope","3","Species richness",3,5,1.45097204153625,3,7.8438529439856
+"60","Bougainville","BOUG-02","T24",24.2,"outer_slope","wall","2.5","Species richness",2,2.5,0.703239258393226,2,3.87832361896538
+"61","Bougainville","BOUG-02","T25",22.3,"outer_slope","steep_slope","2.5","Species richness",7,18.25,7.8030954263243,7,33.5437860035248
+"62","Bougainville","BOUG-02","T26",15.4,"outer_slope","moderate_slope","3","Species richness",3,5,1.46372524146152,3,7.86884875652677
+"63","Bougainville","BOUG-02","T27",13.4,"outer_slope","steep_slope","2.5","Species richness",6,13.1111111111111,5.70526226027656,6,24.2932196636087
+"64","Bougainville","BOUG-02","T28",9.8,"outer_slope","steep_slope","2","Species richness",3,5,1.42424099147431,3,7.79146104859527
+"65","Bougainville","BOUG-02","T3",64.5,"outer_slope","steep_slope","3","Species richness",2,2,0.472581562625261,2,2.92624284250317
+"66","Bougainville","BOUG-02","T5",63,"outer_slope","wall","3","Species richness",1,1,0,1,1
+"67","Bougainville","BOUG-02","T6",58.4,"outer_slope","moderate_slope","3.5","Species richness",1,1,0,1,1
+"68","Bougainville","BOUG-02","T7",57.7,"outer_slope","moderate_slope","3.5","Species richness",1,1,0,1,1
+"69","Bougainville","BOUG-02","T8",55.3,"outer_slope","moderate_slope","3.5","Species richness",7,14.4285714285714,7.54365874608325,7,29.2138708825552
+"70","Bougainville","BOUG-02","T9",53.6,"outer_slope","moderate_slope","3.5","Species richness",3,5,1.41430879240333,3,7.77199429612886
+"71","East Diamond","EDIA-01","T1",48,"lagoon","flat","2","Species richness",1,1,0,1,1
+"72","East Diamond","EDIA-01","T10",25,"lagoon","gentle_slope","2","Species richness",3,3.85714285714286,1.20143784537946,3,6.21191776375
+"73","East Diamond","EDIA-01","T11",26,"lagoon","moderate_slope","2","Species richness",3,3.45454545454545,1.39740227432434,3,6.19340358413552
+"74","East Diamond","EDIA-01","T12",21,"lagoon","moderate_slope","2","Species richness",6,11.5714285714286,3.68155149971235,6,18.7871369180942
+"75","East Diamond","EDIA-01","T13",15,"lagoon","moderate_slope","2","Species richness",1,1,0,1,1
+"76","East Diamond","EDIA-01","T14",19,"lagoon","wall","2","Species richness",3,5,1.46617683892764,3,7.87365379926496
+"77","East Diamond","EDIA-01","T15",15,"lagoon","wall","2","Species richness",1,1,0,1,1
+"78","East Diamond","EDIA-01","T16",10,"lagoon","wall","2","Species richness",3,3,0.652004162263883,3,4.27790467580742
+"79","East Diamond","EDIA-01","T2",50,"lagoon","flat","2","Species richness",1,1,0,1,1
+"80","East Diamond","EDIA-01","T3",48,"lagoon","gentle_slope","2","Species richness",3,3,0.455259820243529,3,3.8922928512855
+"81","East Diamond","EDIA-01","T4",45,"lagoon","gentle_slope","2","Species richness",2,2,0.368452949177471,2,2.72215451038541
+"82","East Diamond","EDIA-01","T5",45,"lagoon","gentle_slope","2","Species richness",4,4.46153846153846,1.3934887905912,4,7.19272630395749
+"83","East Diamond","EDIA-01","T6",39,"lagoon","gentle_slope","2","Species richness",4,4.91666666666667,1.46791859542886,4,7.79373424594385
+"84","East Diamond","EDIA-01","T7",38,"lagoon","gentle_slope","2","Species richness",4,4.94736842105263,0.815066991561487,4,6.54487036950056
+"85","East Diamond","EDIA-01","T8",32,"lagoon","gentle_slope","2","Species richness",3,4.5,1.95388114151079,3,8.32953666743316
+"86","East Diamond","EDIA-01","T9",32,"lagoon","gentle_slope","2","Species richness",6,10.25,4.04330768846785,6,18.1747374478109
+"87","East Diamond","EDIA-02","T1",30.9,"inner_reef","flat","1","Species richness",3,4.5,2.11427925489439,3,8.64391119285318
+"88","East Diamond","EDIA-02","T10",8.7,"inner_reef","steep_slope","2","Species richness",3,3.4375,1.25544049625877,3,5.89811815740028
+"89","East Diamond","EDIA-02","T2",25,"inner_reef","steep_slope","2","Species richness",5,9.05,3.50850262313792,5,15.9265387810146
+"90","East Diamond","EDIA-02","T4",24.2,"inner_reef","gentle_slope","2","Species richness",3,3.875,1.16427379065062,3,6.15693469781914
+"91","East Diamond","EDIA-02","T5",20,"inner_reef","gentle_slope","2","Species richness",6,8.025,4.28370970961649,6,16.4209167510729
+"92","East Diamond","EDIA-02","T6",19.1,"inner_reef","gentle_slope","2","Species richness",4,7.6,3.64705499012698,4,14.748096430286
+"93","East Diamond","EDIA-02","T7",15.4,"inner_reef","moderate_slope","3","Species richness",7,14.3333333333333,6.71944574310046,7,27.5032049858812
+"94","East Diamond","EDIA-02","T8",15.2,"inner_reef","moderate_slope","2","Species richness",6,6.92857142857143,2.25458034215048,6,11.3474676994384
+"95","East Diamond","EDIA-02","T9",9,"inner_reef","steep_slope","2","Species richness",5,9.21875,4.29740159479824,5,17.6415023529095
+"96","East Holmes","HOLM-02","T1",62.7,"outer_slope","steep_slope","3","Species richness",2,2.5,0.697234798067598,2,3.86655509298055
+"97","East Holmes","HOLM-02","T10",37,"outer_slope","gentle_slope","2","Species richness",6,10.1538461538462,5.09471399225132,6,20.139302090191
+"98","East Holmes","HOLM-02","T11",35,"outer_slope","gentle_slope","2","Species richness",12,50.25,19.6233014473756,12,88.710964094629
+"99","East Holmes","HOLM-02","T12",31.2,"outer_slope","gentle_slope","2","Species richness",4,4.83333333333333,2.35542973625287,4,9.44989078450363
+"100","East Holmes","HOLM-02","T13",28,"outer_slope","gentle_slope","2","Species richness",10,13.8095238095238,7.84087131153323,10,29.1773491875423
+"101","East Holmes","HOLM-02","T2",63.7,"outer_slope","steep_slope","3","Species richness",2,2,0.238683256575942,2,2.46781058660158
+"102","East Holmes","HOLM-02","T4",63.2,"outer_slope","steep_slope","4","Species richness",2,2,0.32659863237109,2,2.64012155684737
+"103","East Holmes","HOLM-02","T6",56.6,"outer_slope","steep_slope","3","Species richness",1,1,0,1,1
+"104","East Holmes","HOLM-02","T7",54.5,"outer_slope","steep_slope","4","Species richness",3,5,1.44725445397327,3,7.83656660625278
+"105","East Holmes","HOLM-02","T9",45,"outer_slope","wall","4","Species richness",2,2.5,0.676891289781319,2,3.82668254942025
+"106","East Holmes","HOLM-04","T10",7,"outer_slope","moderate_slope","1","Species richness",1,1,0,1,1
+"107","East Holmes","HOLM-04","T11",3,"outer_slope","gentle_slope","1","Species richness",4,6.5,2.98537352882713,4,12.3512245969004
+"108","East Holmes","HOLM-04","T3",41,"outer_slope","gentle_slope","1","Species richness",2,2.33333333333333,1.24300060541035,2,4.76956975269911
+"109","East Holmes","HOLM-04","T4",37,"outer_slope","gentle_slope","1","Species richness",3,3,0.476984077275906,3,3.93487161265985
+"110","East Holmes","HOLM-04","T5",32,"outer_slope","gentle_slope","1","Species richness",7,14.3333333333333,6.17212253815347,7,26.4304712162821
+"111","East Holmes","HOLM-04","T6",28,"outer_slope","gentle_slope","1","Species richness",3,3.8,1.12944788514235,3,6.01367717729394
+"112","East Holmes","HOLM-04","T6",71,"outer_slope","wall","1","Species richness",1,1,0,1,1
+"113","East Holmes","HOLM-04","T7",22,"outer_slope","gentle_slope","1","Species richness",7,10.7333333333333,5.28325573949236,7,21.0883243038529
+"114","East Holmes","HOLM-04","T8",17,"outer_slope","gentle_slope","1","Species richness",9,20.9565217391304,10.3593506443056,9,41.2604759051911
+"115","East Holmes","HOLM-04","T9",12,"outer_slope","moderate_slope","1","Species richness",5,6.92857142857143,2.56575412060079,5,11.9573570981342
+"116","Edna Cay","EDNA-01","T10",19.1,"outer_slope","flat","3","Species richness",1,1,0,1,1
+"117","Edna Cay","EDNA-01","T11",14,"outer_slope","moderate_slope","3","Species richness",1,1,0,1,1
+"118","Edna Cay","EDNA-01","T12",9.8,"outer_slope","flat","1","Species richness",5,5,0.711445060607912,5,6.39440669577042
+"119","Edna Cay","EDNA-01","T3",79,"outer_slope","moderate_slope","5","Species richness",5,5.88888888888889,2.6549149493351,5,11.0924265716027
+"120","Edna Cay","EDNA-01","T7",48,"outer_slope","moderate_slope","3","Species richness",2,2.33333333333333,1.31297590377955,2,4.90671881731018
+"121","Edna Cay","EDNA-01","T8",39,"outer_slope","moderate_slope","4","Species richness",9,18.4736842105263,6.0188332147302,9,30.2703805403509
+"122","Edna Cay","EDNA-01","T9",26.7,"outer_slope","gentle_slope","3","Species richness",4,4.47222222222222,1.24133849373463,4,6.90520096256529
+"123","Frankie Cay","FRAN-01","T10",8,"outer_slope","gentle_slope","1","Species richness",2,2.33333333333333,1.25593540334435,2,4.79492149079705
+"124","Frankie Cay","FRAN-01","T7",35,"outer_slope","steep_slope","3","Species richness",6,18.5,4.66454158865834,9.35766648184042,27.6423335181596
+"125","Frankie Cay","FRAN-01","T8",25,"outer_slope","moderate_slope","2","Species richness",8,9.4,4.09295586394509,8,17.4220460836444
+"126","Frankie Cay","FRAN-01","T9",14,"outer_slope","moderate_slope","1","Species richness",4,6.75,1.81878968864946,4,10.3147622852058
+"127","Frederick","FRED-01","T1",34.8,"inner_reef","gentle_slope","1","Species richness",3,3,0.661896702150858,3,4.29729369770152
+"128","Frederick","FRED-02","T14",24,"lagoon","gentle_slope","0","Species richness",1,1,0,1,1
+"129","Georgina Cay","GEOR-01","T10",51.4,"outer_slope","moderate_slope","3","Species richness",2,2,0.348735088019777,2,2.68350821266417
+"130","Georgina Cay","GEOR-01","T13",41.2,"outer_slope","steep_slope","2","Species richness",1,1,0,1,1
+"131","Georgina Cay","GEOR-01","T14",36.2,"outer_slope","moderate_slope","2","Species richness",4,5.71428571428571,2.17575232168708,4,9.97868190407181
+"132","Georgina Cay","GEOR-01","T15",32.6,"outer_slope","gentle_slope","2","Species richness",2,2,0.21904291355759,2,2.4293162216416
+"133","Heralds Surprise","HSUP-01","T1",61.3,"outer_slope","steep_slope","4","Species richness",2,2.5,0.738548945875997,2,3.94752933473697
+"134","Heralds Surprise","HSUP-01","T2",55.5,"outer_slope","steep_slope","5","Species richness",3,4.5,2.0909315984735,3,8.59815062714483
+"135","Heralds Surprise","HSUP-01","T3",47.6,"outer_slope","steep_slope","4","Species richness",5,5.88888888888889,2.23700358973368,5,10.2733353580537
+"136","Heralds Surprise","HSUP-01","T4",39.6,"outer_slope","steep_slope","4","Species richness",5,5.47619047619048,1.39578834649997,5,8.21188536537112
+"137","Heralds Surprise","HSUP-01","T5",28.4,"outer_slope","gentle_slope","4","Species richness",9,11.2,4.81074443893893,9,20.6288858391466
+"138","Heralds Surprise","HSUP-01","T6",18.6,"outer_slope","moderate_slope","3","Species richness",8,13.75,4.90880363036531,8,23.3710783226955
+"139","Heralds Surprise","HSUP-01","T7",13.7,"outer_slope","steep_slope","2","Species richness",11,11.6486486486486,2.90835979471525,11,17.3489291003748
+"140","Heralds Surprise","HSUP-01","T8",9.6,"outer_slope","steep_slope","2","Species richness",9,11.175,5.58422103704901,9,22.119872114327
+"141","Hermit Crab Islet","HERM-01","T1",46.2,"lagoon","flat","1","Species richness",5,5,0.947746864969023,5,6.85754972180003
+"142","Hermit Crab Islet","HERM-01","T10",30.3,"lagoon","flat","3","Species richness",8,12.3125,4.61254125102852,8,21.3529147292212
+"143","Hermit Crab Islet","HERM-01","T11",31,"lagoon","flat","2","Species richness",7,7.1171875,2.71412005174118,7,12.4367650511307
+"144","Hermit Crab Islet","HERM-01","T12",33.2,"lagoon","flat","1","Species richness",1,1,0,1,1
+"145","Hermit Crab Islet","HERM-01","T13",21.1,"lagoon","flat","1","Species richness",2,2,0.337997668989631,2,2.66246325807817
+"146","Hermit Crab Islet","HERM-01","T14",22,"lagoon","flat","1","Species richness",3,3.8,1.37369809807194,3,6.49239879785217
+"147","Hermit Crab Islet","HERM-01","T16",23.7,"lagoon","gentle_slope","0","Species richness",1,1,0,1,1
+"148","Hermit Crab Islet","HERM-01","T17",14.1,"lagoon","moderate_slope","0","Species richness",4,7.6,3.08122761839557,4,13.6390951602254
+"149","Hermit Crab Islet","HERM-01","T18",15.2,"lagoon","moderate_slope","0","Species richness",4,4.9,1.373518577533,4,7.59204694406137
+"150","Hermit Crab Islet","HERM-01","T19",13.5,"lagoon","moderate_slope","0","Species richness",6,6.11538461538461,2.21577645351985,6,10.4582266620754
+"151","Hermit Crab Islet","HERM-01","T2",46.6,"lagoon","flat","1","Species richness",3,3.9,0.767719303712581,3,5.40470218551282
+"152","Hermit Crab Islet","HERM-01","T2",48.1,"lagoon","flat","1","Species richness",2,2,0.492365963917331,2,2.96501955649132
+"153","Hermit Crab Islet","HERM-01","T20",10.2,"lagoon","moderate_slope","0","Species richness",6,15,4.74602531072054,6,24.3020386787278
+"154","Hermit Crab Islet","HERM-01","T3",46.8,"lagoon","flat","1","Species richness",2,2,0.21904291355759,2,2.4293162216416
+"155","Hermit Crab Islet","HERM-01","T4",47.1,"lagoon","flat","0","Species richness",1,1,0,1,1
+"156","Hermit Crab Islet","HERM-01","T5",38.7,"lagoon","flat","2","Species richness",1,1,0,1,1
+"157","Hermit Crab Islet","HERM-01","T5",46.4,"lagoon","flat","1","Species richness",1,1,0,1,1
+"158","Hermit Crab Islet","HERM-01","T6",40.2,"lagoon","flat","2","Species richness",2,2.5,0.661266003415212,2,3.79605755089456
+"159","Hermit Crab Islet","HERM-01","T7",41.2,"lagoon","flat","2","Species richness",3,3,0.630731853608175,3,4.23621171697421
+"160","Hermit Crab Islet","HERM-01","T7",47.7,"lagoon","flat","1","Species richness",3,4.5,1.9927330098347,3,8.40568493008011
+"161","Hermit Crab Islet","HERM-01","T8",42.5,"lagoon","flat","2","Species richness",3,3.41666666666667,1.28436897955585,3,5.9339836094566
+"162","Hermit Crab Islet","HERM-01","T8",47.9,"lagoon","flat","1","Species richness",2,2,0.32659863237109,2,2.64012155684737
+"163","Hermit Crab Islet","HERM-01","T9",30.1,"lagoon","flat","3","Species richness",8,29.7777777777778,10.901159569518,8.41189763179826,51.1436579237573
+"164","Juliette Cay","JULI-01","T1",98,"outer_slope","steep_slope","4","Species richness",1,1,0,1,1
+"165","Juliette Cay","JULI-01","T3",68,"outer_slope","flat","3","Species richness",1,1,0,1,1
+"166","Juliette Cay","JULI-01","T7",34.9,"outer_slope","gentle_slope","3","Species richness",6,8.86363636363636,1.49639725813472,6,11.7965210961449
+"167","Juliette Cay","JULI-01","T8",28,"outer_slope","gentle_slope","3","Species richness",2,2,0.301511344577764,2,2.59095137630266
+"168","Juliette Cay","JULI-02","T2",94.2,"outer_slope","moderate_slope","3","Species richness",1,1,0,1,1
+"169","Juliette Cay","JULI-02","T3",86.4,"outer_slope","moderate_slope","3","Species richness",1,1,0,1,1
+"170","Juliette Cay","JULI-02","T4",77,"outer_slope","moderate_slope","3.5","Species richness",2,2,0.31446603773522,2,2.61634210832205
+"171","Juliette Cay","JULI-02","T5",67.1,"outer_slope","moderate_slope","3","Species richness",4,4.21875,1.94722868394006,4,8.03524809018584
+"172","Juliette Cay","JULI-02","T6",59.1,"outer_slope","gentle_slope","1.5","Species richness",1,1,0,1,1
+"173","Juliette Cay","JULI-02","T8",47.6,"outer_slope","gentle_slope","1.5","Species richness",5,5,0.778985733934995,5,6.52678398298309
+"174","Juliette Cay","JULI-02","T9",35.4,"outer_slope","moderate_slope","3","Species richness",6,13.1111111111111,6.86678135085601,6,26.5697552485002
+"175","Kenn","KENN-01","T1",40.8,"outer_slope","steep_slope","4","Species richness",6,10.125,4.33051745925017,6,18.6126582545522
+"176","Kenn","KENN-01","T2",31.1,"outer_slope","steep_slope","4","Species richness",7,18.25,9.37593732687969,7,36.6264994819889
+"177","Kenn","KENN-01","T3",31.4,"outer_slope","gentle_slope","3","Species richness",11,13.1964285714286,5.09167337708005,11,23.1759250115469
+"178","Kenn","KENN-01","T4",32.3,"outer_slope","gentle_slope","3","Species richness",4,5.75,2.10432649689253,4,9.8744041456227
+"179","Kenn","KENN-02","T4",20,"lagoon","gentle_slope","0","Species richness",1,1,0,1,1
+"180","Lorna Cay","LORN-01","T1",45.1,"outer_slope","flat","2","Species richness",3,3,0.368452949177471,3,3.72215451038541
+"181","Lorna Cay","LORN-01","T10",4,"outer_slope","flat","1","Species richness",4,5.71428571428571,2.23313106552278,4,10.0911421754679
+"182","Lorna Cay","LORN-01","T12",55.6,"outer_slope","steep_slope","4","Species richness",2,2.5,0.676891289781319,2,3.82668254942025
+"183","Lorna Cay","LORN-01","T13",55.2,"outer_slope","steep_slope","3","Species richness",3,5,1.40264300782751,3,7.74912977850885
+"184","Lorna Cay","LORN-01","T5",31.7,"outer_slope","flat","2","Species richness",1,1,0,1,1
+"185","Lorna Cay","LORN-01","T6",32.5,"outer_slope","flat","2","Species richness",4,5.71428571428571,1.79429956405901,4,9.23104823731729
+"186","Lorna Cay","LORN-01","T6",46,"outer_slope","steep_slope","1","Species richness",1,1,0,1,1
+"187","Lorna Cay","LORN-01","T7",34,"outer_slope","flat","2","Species richness",3,3,0.507120012492809,3,3.99393696032541
+"188","Lorna Cay","LORN-01","T7",36.5,"outer_slope","flat","3","Species richness",2,2.33333333333333,1.2119124399333,2,4.70863806801867
+"189","Lorna Cay","LORN-01","T8",27,"outer_slope","flat","2","Species richness",3,3.44444444444444,1.20580288338941,3,5.80777466834224
+"190","Lorna Cay","LORN-01","T8",40,"outer_slope","gentle_slope","3","Species richness",6,6.15625,2.64572490844076,6,11.3417755335444
+"191","Lorna Cay","LORN-01","T9",44.8,"outer_slope","gentle_slope","2","Species richness",5,5.90909090909091,2.03339513795814,5,9.89447214582773
+"192","Lorna Cay","LORN-01","T9",9,"outer_slope","flat","1","Species richness",5,10.1428571428571,3.73308015529903,5,17.4595597986444
+"193","Lorna Cay","LORN-02","T4",15,"lagoon","flat","1","Species richness",7,7.12222222222222,3.20018776468294,7,13.3944749847665
+"194","Lorna Cay","LORN-02","T5",7,"lagoon","flat","3","Species richness",7,10.6363636363636,5.96947380638473,7,22.3363173035329
+"195","Margaret Cay","MARG-01","T10",9,"outer_slope","gentle_slope","4","Species richness",12,23.7395833333333,11.0635006787337,12,45.4236462065858
+"196","Margaret Cay","MARG-01","T5",53.3,"outer_slope","steep_slope","1","Species richness",2,2.33333333333333,1.24926914661069,2,4.78185586768737
+"197","Margaret Cay","MARG-01","T6",43.6,"outer_slope","moderate_slope","0","Species richness",5,9,4.0258949506148,5,16.8906091087467
+"198","Margaret Cay","MARG-01","T7",34.2,"outer_slope","moderate_slope","0","Species richness",1,1,0,1,1
+"199","Margaret Cay","MARG-01","T8",25.2,"outer_slope","moderate_slope","1","Species richness",10,36.7272727272727,12.8533580018352,11.5351539632761,61.9193914912693
+"200","Margaret Cay","MARG-01","T9",17.3,"outer_slope","gentle_slope","4","Species richness",2,2,0.468826172262151,2,2.91888241264359
+"201","Margaret Cay","MARG-02","T10",6.4,"lagoon","moderate_slope","1","Species richness",6,10.390243902439,4.47006588908177,6,19.1514120535603
+"202","Margaret Cay","MARG-02","T2",42.2,"lagoon","moderate_slope","0","Species richness",1,1,0,1,1
+"203","Margaret Cay","MARG-02","T3",34.5,"lagoon","moderate_slope","0","Species richness",1,1,0,1,1
+"204","Margaret Cay","MARG-02","T4",34.9,"lagoon","moderate_slope","0","Species richness",1,1,0,1,1
+"205","Margaret Cay","MARG-02","T8",13.8,"lagoon","moderate_slope","0","Species richness",2,2,0.487831731214563,2,2.95613262369637
+"206","Margaret Cay","MARG-02","T9",7.7,"lagoon","moderate_slope","1","Species richness",5,6.96875,2.06491930077199,5,11.0159174604947
+"207","Marion","MARI-01","T1",33.9,"lagoon","flat","2","Species richness",3,3.88888888888889,1.01519261074553,3,5.87862984332133
+"208","Marion","MARI-01","T6",35,"lagoon","flat","1","Species richness",3,3.83333333333333,1.02984742476449,3,5.85179719544306
+"209","Marion","MARI-02","T1",18,"lagoon","flat","0","Species richness",4,4.225,1.3948249184146,4,6.95880660483164
+"210","Marion","MARI-02","T10",45,"lagoon","flat","2","Species richness",5,5,1.13976804009633,5,7.23390430931861
+"211","Marion","MARI-02","T11",46,"lagoon","flat","2","Species richness",1,1,0,1,1
+"212","Marion","MARI-02","T12",46,"lagoon","flat","2","Species richness",5,9.09090909090909,3.80607574304532,5,16.5506804697094
+"213","Marion","MARI-02","T13",48,"lagoon","flat","2","Species richness",3,3.8,1.23630436578073,3,6.22311203085986
+"214","Marion","MARI-02","T14",45,"lagoon","flat","2","Species richness",3,3.8,1.65934756559147,3,7.0522614663935
+"215","Marion","MARI-02","T15",44,"lagoon","flat","2","Species richness",3,3.8,1.62239254675235,3,6.97983096042082
+"216","Marion","MARI-02","T16",46,"lagoon","flat","2","Species richness",5,5.90909090909091,2.05104158233666,5,9.9290585412648
+"217","Marion","MARI-02","T17",54,"lagoon","flat","1","Species richness",3,3.2,1.55945600460642,3,6.25647760450332
+"218","Marion","MARI-02","T4",38,"lagoon","flat","1","Species richness",3,3.45454545454545,1.24844472908874,3,5.90145216024824
+"219","Marion","MARI-02","T5",41,"lagoon","flat","1","Species richness",3,3.83333333333333,1.03661367019472,3,5.86505879279687
+"220","Marion","MARI-02","T6",43,"lagoon","flat","1","Species richness",3,4.5,1.7523721296597,3,7.93458626164477
+"221","Marion","MARI-02","T7",44,"lagoon","flat","2","Species richness",5,5.9,1.97280174299693,5,9.76662036491182
+"222","Marion","MARI-02","T9",44,"lagoon","flat","2","Species richness",6,9.5,4.56021889395047,6,18.437864793762
+"223","Middle Cay","MIDD-01","T1",40,"inner_reef","flat","2","Species richness",4,7.6,3.01636948142711,4,13.5119755476629
+"224","Middle Cay","MIDD-01","T10",5,"inner_reef","flat","1","Species richness",1,1,0,1,1
+"225","Middle Cay","MIDD-01","T2",40,"inner_reef","flat","1","Species richness",2,2.5,0.708872343937891,2,3.88936426375476
+"226","Middle Cay","MIDD-01","T3",30,"inner_reef","flat","1","Species richness",4,4.83333333333333,2.0187940958828,4,8.79009705346573
+"227","Middle Cay","MIDD-01","T5",26,"inner_reef","flat","1","Species richness",2,2,0.460566186471838,2,2.90269313798176
+"228","Middle Cay","MIDD-01","T6",21,"inner_reef","steep_slope","3","Species richness",8,15.6,7.1408425867909,8,29.59579428938
+"229","Middle Cay","MIDD-01","T7",11,"inner_reef","flat","3","Species richness",7,9.90909090909091,3.29134365912968,7,16.3600059417294
+"230","Middle Cay","MIDD-01","T8",10,"inner_reef","flat","3","Species richness",7,7.24444444444444,1.78489965629917,7,10.7427834868087
+"231","Middle Cay","MIDD-01","T9",4,"inner_reef","flat","1","Species richness",3,3.44444444444444,1.25059606688532,3,5.89556769474712
+"232","North Flinders","FLIN-02","T4",40,"lagoon","flat","0","Species richness",1,1,0,1,1
+"233","North Flinders","FLIN-02","T5",41.5,"lagoon","flat","0","Species richness",1,1,0,1,1
+"234","North Flinders","FLIN-02","T6",43.3,"lagoon","flat","0","Species richness",3,3.45,1.31086215749773,3,6.01924261739202
+"235","North Flinders","FLIN-02","T7",44,"lagoon","flat","1","Species richness",3,4.5,2.15028187017705,3,8.71447502215645
+"236","North Flinders","FLIN-04","T1",34.1,"lagoon","flat","1","Species richness",3,3.41666666666667,1.13388405118265,3,5.63903856962903
+"237","North Flinders","FLIN-04","T5",18.8,"lagoon","gentle_slope","0","Species richness",4,4.95454545454546,0.732995021340955,4,6.39118929722089
+"238","Observation Cay","OBSN-01","T10",5,"outer_slope","wall","1","Species richness",7,14.68,6.36822541603977,7,27.1614924608706
+"239","Observation Cay","OBSN-01","T11",5,"outer_slope","wall","1","Species richness",7,8.92307692307692,3.33130248461161,7,15.4523098145245
+"240","Observation Cay","OBSN-01","T4",63,"outer_slope","wall","1","Species richness",1,1,0,1,1
+"241","Observation Cay","OBSN-01","T7",33,"outer_slope","wall","1","Species richness",2,2,0.14070529413629,2,2.27577730894124
+"242","Observation Cay","OBSN-01","T8",25,"outer_slope","wall","1","Species richness",5,5.88888888888889,2.44302683105794,5,10.6771334910275
+"243","Observation Cay","OBSN-01","T9",16,"outer_slope","wall","1","Species richness",5,7.7,2.08142753739695,5,11.7795230097279
+"244","Osprey","OSPR-01","T12",44.7,"outer_slope","wall","3.5","Species richness",1,1,0,1,1
+"245","Osprey","OSPR-01","T14",55,"outer_slope","steep_slope","3","Species richness",3,4.5,2.12845085221694,3,8.67168701320879
+"246","Osprey","OSPR-01","T15",52.4,"outer_slope","steep_slope","4","Species richness",3,5,1.44396262360263,3,7.83011473728312
+"247","Osprey","OSPR-01","T16",38.2,"outer_slope","wall","2.5","Species richness",2,2.5,0.714142842854285,2,3.89969425181145
+"248","Osprey","OSPR-01","T16",66.2,"outer_slope","steep_slope","3","Species richness",1,1,0,1,1
+"249","Osprey","OSPR-01","T17",35.3,"outer_slope","steep_slope","2.5","Species richness",5,13,3.63423619585639,5.87702794480962,20.1229720551904
+"250","Osprey","OSPR-01","T18",33.3,"outer_slope","wall","3","Species richness",3,4.5,2.1200045263912,3,8.65513251878865
+"251","Osprey","OSPR-01","T19",28.2,"outer_slope","wall","2.5","Species richness",5,13,3.40144710737098,6.33328617423493,19.6667138257651
+"252","Osprey","OSPR-01","T19",53.2,"outer_slope","steep_slope","3","Species richness",1,1,0,1,1
+"253","Osprey","OSPR-01","T21",21.8,"outer_slope","steep_slope","2.5","Species richness",10,43.2307692307692,14.2357983721522,15.329117130177,71.1324213313614
+"254","Osprey","OSPR-01","T21",52.8,"outer_slope","steep_slope","4","Species richness",2,2.5,0.697234798067598,2,3.86655509298055
+"255","Osprey","OSPR-01","T22",18.8,"outer_slope","wall","3","Species richness",3,5,1.37569082737556,3,7.6963044755182
+"256","Osprey","OSPR-01","T22",47.8,"outer_slope","moderate_slope","2","Species richness",4,4.88888888888889,1.4920811883415,4,7.81331428004794
+"257","Osprey","OSPR-01","T23",16.4,"outer_slope","wall","3","Species richness",6,18.5,4.8762681449367,8.94269005696414,28.0573099430359
+"258","Osprey","OSPR-01","T24",14.1,"outer_slope","wall","2.5","Species richness",5,7.78571428571429,2.02815114738367,5,11.7608174897899
+"259","Osprey","OSPR-01","T24",41.2,"outer_slope","wall","4","Species richness",1,1,0,1,1
+"260","Osprey","OSPR-01","T25",32.8,"outer_slope","moderate_slope","3","Species richness",2,2.33333333333333,1.31809473763221,2,4.91675154730425
+"261","Osprey","OSPR-01","T25",9.1,"outer_slope","wall","2.5","Species richness",7,14.6923076923077,6.12083343505098,7,26.6889207803762
+"262","Osprey","OSPR-01","T26",35.7,"outer_slope","gentle_slope","2.5","Species richness",2,2.33333333333333,1.11312947991563,2,4.51502702409777
+"263","Osprey","OSPR-01","T26",7.1,"outer_slope","wall","2.5","Species richness",5,7.84210526315789,1.90693955814361,5,11.5796381178141
+"264","Osprey","OSPR-01","T27",36.6,"outer_slope","moderate_slope","3","Species richness",6,18.5,4.26324568241112,10.1441920052283,26.8558079947717
+"265","Osprey","OSPR-01","T27",7,"outer_slope","steep_slope","2.5","Species richness",4,4.90909090909091,1.30707768813165,4,7.47091610282482
+"266","Osprey","OSPR-01","T28",28.8,"outer_slope","moderate_slope","3","Species richness",3,3.41666666666667,1.31645887632845,3,5.9968786513985
+"267","Osprey","OSPR-01","T29",25.5,"outer_slope","moderate_slope","2.5","Species richness",4,6.66666666666667,1.82797366410813,4,10.2494292130063
+"268","Osprey","OSPR-01","T3",77.2,"outer_slope","steep_slope","3","Species richness",1,1,0,1,1
+"269","Osprey","OSPR-01","T30",23.7,"outer_slope","moderate_slope","3","Species richness",3,3,0.626481274962618,3,4.22788073591547
+"270","Osprey","OSPR-01","T31",18.9,"outer_slope","steep_slope","3","Species richness",1,1,0,1,1
+"271","Osprey","OSPR-01","T32",15.4,"outer_slope","steep_slope","2.5","Species richness",5,8.9375,3.69790564682761,5,16.1852618860094
+"272","Osprey","OSPR-01","T33",12.7,"outer_slope","moderate_slope","3","Species richness",3,5,1.45437148230077,3,7.85051572545164
+"273","Osprey","OSPR-01","T34",5.1,"outer_slope","moderate_slope","1","Species richness",6,6.48333333333333,2.0697064287426,6,10.5398833922398
+"274","Osprey","OSPR-01","T35",7.1,"outer_slope","moderate_slope","1","Species richness",5,7.8125,2.43675070128891,5,12.588443613829
+"275","Osprey","OSPR-01","T36",9.1,"outer_slope","moderate_slope","1","Species richness",2,2,0.238683256575942,2,2.46781058660158
+"276","Osprey","OSPR-01","T7",67.8,"outer_slope","steep_slope","3.5","Species richness",1,1,0,1,1
+"277","Osprey","OSPR-01","T7",96.3,"outer_slope","wall","2","Species richness",1,1,0,1,1
+"278","Osprey","OSPR-01","T8",65.8,"outer_slope","steep_slope","4","Species richness",1,1,0,1,1
+"279","Osprey","OSPR-01","T9",63.2,"outer_slope","moderate_slope","3","Species richness",1,1,0,1,1
+"280","Osprey","OSPR-02","T1",47.7,"outer_slope","steep_slope","3","Species richness",3,3.8,1.51674691762377,3,6.77276933220473
+"281","Osprey","OSPR-02","T10",12.7,"outer_slope","moderate_slope","2","Species richness",8,12.3714285714286,4.31716275944688,8,20.832912095342
+"282","Osprey","OSPR-02","T10",68,"outer_slope","steep_slope","4","Species richness",1,1,0,1,1
+"283","Osprey","OSPR-02","T11",15.8,"outer_slope","steep_slope","2","Species richness",4,7.6,3.11327623073972,4,13.7019092861745
+"284","Osprey","OSPR-02","T11",64.2,"outer_slope","steep_slope","4","Species richness",1,1,0,1,1
+"285","Osprey","OSPR-02","T12",18.2,"outer_slope","wall","2","Species richness",4,8.5,2.1209572357687,4.34300020514373,12.6569997948563
+"286","Osprey","OSPR-02","T12",61.4,"outer_slope","steep_slope","4","Species richness",1,1,0,1,1
+"287","Osprey","OSPR-02","T13",9.4,"outer_slope","moderate_slope","2","Species richness",6,6.95,1.97338847781817,6,10.8177703440299
+"288","Osprey","OSPR-02","T14",7.3,"outer_slope","moderate_slope","2","Species richness",9,14.8775510204082,4.27420395293645,9,23.2548368307423
+"289","Osprey","OSPR-02","T15",6.1,"outer_slope","gentle_slope","1","Species richness",10,12.9739130434783,2.42293371518585,10,17.7227758621704
+"290","Osprey","OSPR-02","T16",47.8,"outer_slope","moderate_slope","4","Species richness",2,2,0.440844002276808,2,2.86403836726304
+"291","Osprey","OSPR-02","T19",33.2,"outer_slope","steep_slope","3","Species richness",4,4.83333333333333,2.20527168490979,4,9.15558641188249
+"292","Osprey","OSPR-02","T20",27.7,"outer_slope","steep_slope","3","Species richness",3,3.2,1.65579972438478,3,6.44530782540552
+"293","Osprey","OSPR-02","T21",21.4,"outer_slope","moderate_slope","2","Species richness",4,7.6,3.51188458428425,4,14.4831673030585
+"294","Osprey","OSPR-02","T22",17.1,"outer_slope","wall","3","Species richness",3,5,1.31809473763221,3,7.58341821397091
+"295","Osprey","OSPR-02","T23",14.1,"outer_slope","steep_slope","2","Species richness",8,12.32,5.5844342976028,8,23.2652900973317
+"296","Osprey","OSPR-02","T24",6.2,"outer_slope","moderate_slope","1","Species richness",14,28.8695652173913,14.5134091993207,14,57.3153245409523
+"297","Osprey","OSPR-02","T25",8.2,"outer_slope","moderate_slope","2","Species richness",10,27.6727272727273,11.9390688139753,10,51.0728721570641
+"298","Osprey","OSPR-02","T3",42.3,"outer_slope","moderate_slope","3","Species richness",6,13.4285714285714,6.39786853238518,6,25.9681633298685
+"299","Osprey","OSPR-02","T4",32.2,"outer_slope","steep_slope","2","Species richness",2,2.33333333333333,1.04652704466672,2,4.38448864972724
+"300","Osprey","OSPR-02","T5",35,"outer_slope","steep_slope","3","Species richness",1,1,0,1,1
+"301","Osprey","OSPR-02","T6",38.1,"outer_slope","steep_slope","3","Species richness",2,2,0.472581562625261,2,2.92624284250317
+"302","Osprey","OSPR-02","T6",80.6,"outer_slope","steep_slope","4","Species richness",2,2.33333333333333,1.07672029762915,2,4.44366633810971
+"303","Osprey","OSPR-02","T7",28,"outer_slope","steep_slope","2","Species richness",2,2,0.358870281282637,2,2.70337282643573
+"304","Osprey","OSPR-02","T7",71.6,"outer_slope","steep_slope","5","Species richness",1,1,0,1,1
+"305","Osprey","OSPR-02","T8",24.9,"outer_slope","steep_slope","3","Species richness",3,4.5,1.95326714129238,3,8.32833324911858
+"306","Osprey","OSPR-02","T9",23.1,"outer_slope","wall","3","Species richness",4,4.88888888888889,1.42669575616035,4,7.68516118785932
+"307","Osprey","OSPR-03","T1",55.6,"outer_slope","wall","3","Species richness",1,1,0,1,1
+"308","Osprey","OSPR-03","T10",18.1,"outer_slope","steep_slope","2.5","Species richness",4,8.5,2.23025001995632,4.12879028436588,12.8712097156341
+"309","Osprey","OSPR-03","T11",8.3,"outer_slope","moderate_slope","1","Species richness",9,16.8620689655172,7.872824968673,9,32.292522360704
+"310","Osprey","OSPR-03","T12",6.4,"outer_slope","moderate_slope","1","Species richness",12,16.4707792207792,4.71237068618068,12,25.7068560474956
+"311","Osprey","OSPR-03","T13",96.5,"outer_slope","wall","2.5","Species richness",1,1,0,1,1
+"312","Osprey","OSPR-03","T16",81.1,"outer_slope","steep_slope","3","Species richness",1,1,0,1,1
+"313","Osprey","OSPR-03","T19",78.1,"outer_slope","steep_slope","3","Species richness",1,1,0,1,1
+"314","Osprey","OSPR-03","T2",55.7,"outer_slope","steep_slope","3","Species richness",1,1,0,1,1
+"315","Osprey","OSPR-03","T21",60.6,"outer_slope","wall","3","Species richness",1,1,0,1,1
+"316","Osprey","OSPR-03","T22",64.9,"outer_slope","wall","3","Species richness",2,2.5,0.652791209833867,2,3.77944726069871
+"317","Osprey","OSPR-03","T3",45.8,"outer_slope","wall","3","Species richness",1,1,0,1,1
+"318","Osprey","OSPR-03","T5",37.5,"outer_slope","steep_slope","3.5","Species richness",1,1,0,1,1
+"319","Osprey","OSPR-03","T6",34.3,"outer_slope","steep_slope","3.5","Species richness",3,5,1.47405546238018,3,7.88909561747968
+"320","Osprey","OSPR-03","T7",28.2,"outer_slope","wall","3.5","Species richness",4,5.71428571428571,1.99006706787803,4,9.61474549414587
+"321","Osprey","OSPR-03","T8",24.4,"outer_slope","steep_slope","3.5","Species richness",3,5,1.39802650707278,3,7.74008160329498
+"322","Osprey","OSPR-03","T9",14.5,"outer_slope","wall","2","Species richness",3,3.8,1.66709812597104,3,7.06745228559746
+"323","Saumarez","SAUM-01","T2",29.6,"inner_reef","flat","1","Species richness",2,2.5,0.723627226986633,2,3.91828330312639
+"324","Saumarez","SAUM-01","T4",29.6,"inner_reef","flat","0","Species richness",2,2,0.287623491264661,2,2.56373168398641
+"325","Saumarez","SAUM-01","T5",29.5,"inner_reef","flat","1","Species richness",2,2,0.348735088019777,2,2.68350821266417
+"326","Saumarez","SAUM-01","T6",29.9,"inner_reef","flat","1","Species richness",1,1,0,1,1
+"327","Shark Cay","SHAR-01","T10",11,"outer_slope","flat","1","Species richness",5,6.88888888888889,2.29677485786799,5,11.3904848909073
+"328","Shark Cay","SHAR-01","T2",85,"outer_slope","wall","2","Species richness",1,1,0,1,1
+"329","Shark Cay","SHAR-01","T3",77,"outer_slope","moderate_slope","2","Species richness",1,1,0,1,1
+"330","Shark Cay","SHAR-01","T7",36,"outer_slope","steep_slope","2","Species richness",5,5.45833333333333,2.27098012980665,5,9.90937259736046
+"331","Shark Cay","SHAR-01","T8",28,"outer_slope","gentle_slope","3","Species richness",3,3,0.499108430068764,3,3.97823454731511
+"332","Shark Cay","SHAR-01","T9",18,"outer_slope","gentle_slope","1","Species richness",2,2,0.487831731214563,2,2.95613262369637
+"333","South Diamond","SDIA-01","T1",35.3,"lagoon","flat","1","Species richness",1,1,0,1,1
+"334","South Diamond","SDIA-01","T2",35.6,"lagoon","flat","2","Species richness",1,1,0,1,1
+"335","South Diamond","SDIA-02","T1",15.2,"outer_slope","gentle_slope","2","Species richness",8,8.97435897435897,3.05831578913542,8,14.9685477744146
+"336","South Diamond","SDIA-02","T1",31.5,"outer_slope","flat","2","Species richness",3,3.875,1.0772657057226,3,5.98640198499642
+"337","South Diamond","SDIA-02","T1",95.3,"outer_slope","gentle_slope","3","Species richness",1,1,0,1,1
+"338","South Diamond","SDIA-02","T10",23.7,"outer_slope","gentle_slope","3","Species richness",3,3.2,1.77281833487948,3,6.67466008749605
+"339","South Diamond","SDIA-02","T10",74.1,"outer_slope","gentle_slope","0","Species richness",1,1,0,1,1
+"340","South Diamond","SDIA-02","T11",21.4,"outer_slope","gentle_slope","3","Species richness",2,2,0.1,2,2.19599639845401
+"341","South Diamond","SDIA-02","T12",20,"outer_slope","gentle_slope","3","Species richness",4,4.46428571428571,1.05004106420407,4,6.52232838241379
+"342","South Diamond","SDIA-02","T13",66.8,"outer_slope","flat","0","Species richness",1,1,0,1,1
+"343","South Diamond","SDIA-02","T15",79,"outer_slope","gentle_slope","3","Species richness",5,11.6666666666667,5.06964812099489,5,21.6029943981078
+"344","South Diamond","SDIA-02","T2",36,"outer_slope","flat","3","Species richness",3,3.88888888888889,0.95273708001414,3,5.75621925245246
+"345","South Diamond","SDIA-02","T2",93.9,"outer_slope","gentle_slope","3","Species richness",1,1,0,1,1
+"346","South Diamond","SDIA-02","T3",43.7,"outer_slope","flat","3","Species richness",2,2.33333333333333,1.23539276596364,2,4.75465866138338
+"347","South Diamond","SDIA-02","T3",94.1,"outer_slope","gentle_slope","3","Species richness",2,2.33333333333333,1.37255445207311,2,5.02349062621674
+"348","South Diamond","SDIA-02","T4",47.5,"outer_slope","flat","3","Species richness",3,3.8,1.36670362108205,3,6.47868987486129
+"349","South Diamond","SDIA-02","T4",97.2,"outer_slope","gentle_slope","3","Species richness",1,1,0,1,1
+"350","South Diamond","SDIA-02","T5",41.7,"outer_slope","flat","3","Species richness",2,2.33333333333333,1.09286020805199,2,4.47529998125218
+"351","South Diamond","SDIA-02","T5",88.7,"outer_slope","gentle_slope","3","Species richness",2,2.5,0.719058728161653,2,3.90932920996602
+"352","South Diamond","SDIA-02","T6",35.1,"outer_slope","flat","2","Species richness",2,2.33333333333333,0.997055147648464,2,4.28752551332459
+"353","South Diamond","SDIA-02","T6",87,"outer_slope","gentle_slope","3","Species richness",1,1,0,1,1
+"354","South Diamond","SDIA-02","T7",33.3,"outer_slope","flat","2","Species richness",3,4.5,2.05649377987551,3,8.53065374298664
+"355","South Diamond","SDIA-02","T7",84.4,"outer_slope","gentle_slope","3","Species richness",2,2.5,0.708872343937891,2,3.88936426375476
+"356","South Diamond","SDIA-02","T8",28.8,"outer_slope","gentle_slope","3","Species richness",2,2.5,0.744067445623287,2,3.95834539549036
+"357","South Diamond","SDIA-02","T8",81.7,"outer_slope","gentle_slope","3","Species richness",1,1,0,1,1
+"358","South Diamond","SDIA-02","T9",24.7,"outer_slope","gentle_slope","3","Species richness",1,1,0,1,1
+"359","South Diamond","SDIA-02","T9",78.2,"outer_slope","gentle_slope","3","Species richness",2,2.5,0.714142842854285,2,3.89969425181145
+"360","South Flinders","FLIN-01","T1",35.6,"outer_slope","steep_slope","4","Species richness",6,7.33333333333333,3.43686487290856,6,14.0694647039649
+"361","South Flinders","FLIN-01","T1",41.5,"outer_slope","steep_slope","4","Species richness",3,5,1.44973390491556,3,7.84142624080112
+"362","South Flinders","FLIN-01","T10",45.7,"outer_slope","gentle_slope","3","Species richness",1,1,0,1,1
+"363","South Flinders","FLIN-01","T2",34.3,"outer_slope","steep_slope","3","Species richness",2,2.5,0.690849279707758,2,3.85403970697264
+"364","South Flinders","FLIN-01","T2",37.1,"outer_slope","wall","4","Species richness",4,6.5,2.27137480802234,4,10.9518128191154
+"365","South Flinders","FLIN-01","T3",30.2,"outer_slope","steep_slope","4","Species richness",3,3.42857142857143,1.2999659066617,3,5.97645778675833
+"366","South Flinders","FLIN-01","T3",42.1,"outer_slope","wall","3","Species richness",1,1,0,1,1
+"367","South Flinders","FLIN-01","T4",25.3,"outer_slope","steep_slope","4","Species richness",2,2,0.456048021572069,2,2.893837697502
+"368","South Flinders","FLIN-01","T4",35.2,"outer_slope","wall","3","Species richness",3,5,1.39107303010452,3,7.72645303886986
+"369","South Flinders","FLIN-01","T5",20.4,"outer_slope","steep_slope","4","Species richness",3,3.8,1.32212867846675,3,6.39132459272237
+"370","South Flinders","FLIN-01","T6",15.3,"outer_slope","steep_slope","4","Species richness",3,4.5,2.15882029138719,3,8.73121002021315
+"371","South Flinders","FLIN-01","T6",34.3,"outer_slope","steep_slope","3","Species richness",1,1,0,1,1
+"372","South Flinders","FLIN-01","T7",45.2,"outer_slope","wall","4","Species richness",1,1,0,1,1
+"373","South Flinders","FLIN-01","T7",67.1,"outer_slope","gentle_slope","4","Species richness",1,1,0,1,1
+"374","South Flinders","FLIN-01","T7",9.9,"outer_slope","moderate_slope","4","Species richness",4,5.75,2.06261557807986,4,9.79265224698779
+"375","South Flinders","FLIN-01","T8",5.2,"outer_slope","gentle_slope","2","Species richness",3,3.85714285714286,0.970494415455771,3,5.75927695863342
+"376","Southwest Cay","SWCA-01","T12",61.2,"outer_slope","flat","1","Species richness",1,1,0,1,1
+"377","Southwest Cay","SWCA-01","T16",48.1,"outer_slope","steep_slope","2","Species richness",2,2.5,0.661266003415212,2,3.79605755089456
+"378","Southwest Cay","SWCA-01","T17",44.1,"outer_slope","moderate_slope","2","Species richness",2,2.33333333333333,1.06666666666667,2,4.42396158350939
+"379","Southwest Cay","SWCA-01","T18",40.5,"outer_slope","moderate_slope","3","Species richness",4,4.9,1.20164249965191,4,7.25517602161043
+"380","Southwest Cay","SWCA-01","T19",37.4,"outer_slope","moderate_slope","2","Species richness",3,3,0.233265682833714,3,3.45719233718322
+"381","Southwest Cay","SWCA-01","T20",35,"outer_slope","gentle_slope","2","Species richness",4,6.66666666666667,1.76724538587515,4,10.1304039748265
+"382","Southwest Cay","SWCA-01","T21",32.1,"outer_slope","steep_slope","2","Species richness",3,3.8,1.33572361503328,3,6.41797017876487
+"383","Southwest Cay","SWCA-01","T22",27.9,"outer_slope","steep_slope","2","Species richness",5,6.85714285714286,2.57367831045277,5,11.9014596534222
+"384","Southwest Cay","SWCA-01","T23",24.9,"outer_slope","moderate_slope","1","Species richness",4,4.94117647058824,0.854673253789533,4,6.61630526656538
+"385","Southwest Cay","SWCA-01","T24",22.4,"outer_slope","moderate_slope","1","Species richness",5,5.88888888888889,2.54621824184008,5,10.8793849396743
+"386","Southwest Cay","SWCA-01","T25",19.4,"outer_slope","gentle_slope","1","Species richness",10,22.109375,8.60090268406114,10,38.9668344952937
+"387","Southwest Cay","SWCA-01","T26",15.4,"outer_slope","moderate_slope","2","Species richness",3,3,0.401150806676205,3,3.78624113345455
+"388","Southwest Cay","SWCA-01","T27",11,"outer_slope","steep_slope","2","Species richness",4,4.22222222222222,1.58342006575214,4,7.32566852349446
+"389","Turtle Islet","TURT-01","T5",61,"outer_slope","wall","2","Species richness",1,1,0,1,1
+"390","Turtle Islet","TURT-01","T6",50,"outer_slope","wall","1","Species richness",3,5,1.41430879240333,3,7.77199429612886
+"391","West Herald","HERA-01","T2",35.3,"passage","flat","2","Species richness",1,1,0,1,1
+"392","West Herald","HERA-01","T4",43.5,"passage","gentle_slope","2","Species richness",3,3,0.604464415065877,3,4.18472848346519
+"393","West Herald","HERA-01","T5",43.8,"passage","gentle_slope","2","Species richness",5,7.72727272727273,1.98350070602037,5,11.6148626743824
+"394","West Herald","HERA-01","T6",41.7,"passage","gentle_slope","2","Species richness",9,16.6666666666667,6.08151033298524,9,28.5862078909259
+"395","West Herald","HERA-01","T7",40.5,"passage","gentle_slope","2","Species richness",8,8.64197530864197,2.65751184372525,8,13.8506028108321
+"396","West Herald","HERA-01","T8",40.4,"passage","gentle_slope","2","Species richness",8,8.24107142857143,2.57398547276192,8,13.2859902519141
+"397","West Herald","HERA-01","T9",37.1,"passage","gentle_slope","3","Species richness",9,9.64285714285714,2.55967771010869,9,14.6597332667001
+"398","West Holmes","HOLM-01","T1",55,"outer_slope","steep_slope","3","Species richness",2,2.33333333333333,1.22554186462677,2,4.73535124954787
+"399","West Holmes","HOLM-01","T10",34.7,"outer_slope","gentle_slope","1","Species richness",3,4.5,1.9416747951449,3,8.3056126681732
+"400","West Holmes","HOLM-01","T2",51,"outer_slope","steep_slope","3","Species richness",5,6.81818181818182,2.4402457318863,5,11.6009755661066
+"401","West Holmes","HOLM-01","T3",52.4,"outer_slope","steep_slope","3","Species richness",1,1,0,1,1
+"402","West Holmes","HOLM-01","T4",55,"outer_slope","steep_slope","3.5","Species richness",1,1,0,1,1
+"403","West Holmes","HOLM-01","T5",46.4,"outer_slope","moderate_slope","3","Species richness",3,3,0.412924743244779,3,3.80931762508522
+"404","West Holmes","HOLM-01","T6",42.5,"outer_slope","moderate_slope","4","Species richness",3,3,0.617687483483446,3,4.21064522132873
+"405","West Holmes","HOLM-01","T7",43,"outer_slope","moderate_slope","3","Species richness",2,2.5,0.727854880640865,2,3.92656935202779
+"406","West Holmes","HOLM-01","T8",36.8,"outer_slope","moderate_slope","2","Species richness",4,5.75,2.22111253809861,4,10.1033005802836
+"407","West Holmes","HOLM-01","T9",36,"outer_slope","moderate_slope","2","Species richness",5,5.46875,1.53239639465304,5,8.47219174355899
+"408","West Holmes","HOLM-03","T10",9.6,"outer_slope","gentle_slope","4","Species richness",6,7.88235294117647,2.66259066440395,6,13.1009347489808
+"409","West Holmes","HOLM-03","T11",2.3,"outer_slope","gentle_slope","4","Species richness",7,12.8965517241379,5.10690674464511,7,22.905905016047
+"410","West Holmes","HOLM-03","T2",46.8,"outer_slope","gentle_slope","4","Species richness",1,1,0,1,1
+"411","West Holmes","HOLM-03","T3",41.6,"outer_slope","gentle_slope","4","Species richness",1,1,0,1,1
+"412","West Holmes","HOLM-03","T5",32.2,"outer_slope","gentle_slope","4","Species richness",1,1,0,1,1
+"413","West Holmes","HOLM-03","T6",27.3,"outer_slope","gentle_slope","4","Species richness",3,3.41666666666667,1.25165967260551,3,5.86987454587466
+"414","West Holmes","HOLM-03","T7",22.4,"outer_slope","gentle_slope","4","Species richness",3,3.8,1.40446042696442,3,6.55269185456202
+"415","West Holmes","HOLM-03","T8",18.2,"outer_slope","gentle_slope","4","Species richness",4,4,0.524753095166331,4,5.02849716730193
+"416","West Holmes","HOLM-03","T8",61.6,"outer_slope","gentle_slope","4","Species richness",1,1,0,1,1
+"417","West Holmes","HOLM-03","T9",12.6,"outer_slope","gentle_slope","4","Species richness",6,8.8,3.18577786504914,6,15.0440098782412
+"418","West Holmes","HOLM-03","T9",57.1,"outer_slope","gentle_slope","4","Species richness",1,1,0,1,1
+"419","Willis","WILL-01","T1",35.2,"outer_slope","gentle_slope","3","Species richness",5,10.4,2.76456805903387,5,15.8184538285162
+"420","Willis","WILL-01","T10",50.4,"outer_slope","steep_slope","3","Species richness",3,3.41666666666667,1.10543245850403,3,5.58327447267612
+"421","Willis","WILL-01","T11",50.1,"outer_slope","steep_slope","3","Species richness",2,2,0.272659924344291,2,2.53440363174223
+"422","Willis","WILL-01","T12",40,"outer_slope","steep_slope","3","Species richness",1,1,0,1,1
+"423","Willis","WILL-01","T13",43,"outer_slope","steep_slope","3","Species richness",3,5,1.52430367168149,3,7.98758029799789
+"424","Willis","WILL-01","T14",42,"outer_slope","steep_slope","3","Species richness",1,1,0,1,1
+"425","Willis","WILL-01","T15",42,"outer_slope","steep_slope","3","Species richness",5,5.46666666666667,1.45606951113246,5,8.32051046747314
+"426","Willis","WILL-01","T2",42.3,"outer_slope","gentle_slope","4","Species richness",2,2,0.31446603773522,2,2.61634210832205
+"427","Willis","WILL-01","T3",44.4,"outer_slope","gentle_slope","4","Species richness",1,1,0,1,1
+"428","Willis","WILL-01","T4",51.5,"outer_slope","steep_slope","3","Species richness",3,3.2,1.87001863546054,3,6.86516917592139
+"429","Willis","WILL-01","T5",52.3,"outer_slope","steep_slope","3","Species richness",1,1,0,1,1
+"430","Willis","WILL-01","T6",52.3,"outer_slope","steep_slope","3","Species richness",2,2.33333333333333,1.16792140319475,2,4.62241722036853
+"431","Willis","WILL-01","T8",44.8,"outer_slope","steep_slope","2","Species richness",1,1,0,1,1
+"432","Willis","WILL-01","T9",44.1,"outer_slope","steep_slope","2","Species richness",3,3.2,1.7464249196573,3,6.62292994423156
+"433","Wreck","WREC-01","T1",31.5,"outer_slope","gentle_slope","3","Species richness",6,10.1538461538462,5.221124329342,6,20.3870617981623
+"434","Wreck","WREC-01","T2",36.5,"outer_slope","gentle_slope","3","Species richness",6,6.47368421052632,1.70589728612213,6,9.81718145265031
+"435","Wreck","WREC-01","T3",36.3,"outer_slope","gentle_slope","3","Species richness",9,18.6774193548387,5.74198848910242,9,29.931509993123

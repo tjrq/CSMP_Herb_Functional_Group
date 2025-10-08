@@ -1,0 +1,766 @@
+---
+title: "Biomass_model_fit"
+format: html
+editor: visual
+---
+
+# Cleanup
+
+```{r}
+rm(list=ls())
+gc()
+```
+
+Quarto document for fitting biomass (in kg) among depth bands and slope orientation using Bayesian and hurdle lognormal distribution. Hurdle model was used to account for zeroes. Habitat type and site are considered group level variables.
+
+# Load library
+
+```{r}
+#| label: libraries
+#| output: false
+#| eval: true
+#| warning: false
+#| message: false
+#| cache: false
+
+library(tidyverse)
+#library(rstanarm)
+library(brms)
+library(coda)
+library(bayesplot)
+library(DHARMa)
+library(emmeans)
+library(broom)
+library(tidybayes)
+library(ggeffects)
+library(broom.mixed)
+library(bayestestR)
+library(see)
+library(easystats)
+library(patchwork)
+library(ggridges)
+source("helperFunctions.R")
+library(ggimage)
+library(vegan)
+library(BiodiversityR)
+library(ggrepel)
+```
+
+# Read data
+
+```{r}
+fg_biom <- read_csv("Data/herb_biomass.csv",
+                      trim_ws = TRUE)
+#glimpse(fg_biom)
+```
+
+# Declare factors
+
+```{r}
+fg_biom <- fg_biom |> 
+  mutate(Reef_2 = factor(Reef_2),
+         Site = factor(Site),
+         Aspect_descriptive = factor(Aspect_descriptive),
+         Benthic_Complexity = factor(Benthic_Complexity),
+         Habitat = factor(Habitat),
+         herbs = cropper + browser + detritivore + excavator + scraper) # all herbivore column
+```
+
+# Summarize
+
+## Sum
+
+```{r}
+fg_biom |> 
+  group_by(Aspect_descriptive) |> 
+  summarise(sum_herbs = length(herbs),
+            sum_brow = length(browser),
+            sum_exc = length(excavator),
+            sum_crop = length(cropper),
+            sum_det = length(detritivore))
+```
+
+## Median
+
+```{r}
+fg_biom |> 
+  group_by(Aspect_descriptive) |> 
+  summarise(median_herbs = median(herbs),
+            median_brow = median(browser),
+            median_exc = median(excavator),
+            median_crop = median(cropper),
+            median_det = median(detritivore))
+```
+
+## Max
+
+```{r}
+fg_biom |> 
+  group_by(Aspect_descriptive) |> 
+  summarise(max_herbs = max(herbs),
+            max_brow = max(browser),
+            max_exc = max(excavator),
+            max_crop = max(cropper),
+            max_det = max(detritivore))
+```
+
+# Hurdle lognormal 
+
+# ALL HERBIVORES
+
+## define formula
+
+```{r}
+b_herbs_form_2 <- 
+  bf(herbs ~ 
+       Depth_m +
+       Aspect_descriptive +
+       Benthic_Complexity + 
+       Habitat +
+       (1 | Reef_2/Site),
+     family = hurdle_lognormal())
+```
+
+## Examine priors needed
+
+```{r}
+get_prior(b_herbs_form_2, data = fg_biom)
+```
+
+## Data exploration
+
+```{r}
+fg_biom |> 
+  group_by(Depth_m,
+           Aspect_descriptive) |>
+  summarise(log_median = log(median(herbs)),
+            log_mad = log(mad(herbs))) |> 
+  arrange(-log_median) |> 
+  filter(log_median != "-Inf") |> 
+  filter(log_mad != "-Inf")
+```
+
+## Weakly informative priors
+
+```{r}
+b_priors_herbs_2 <- prior(normal(2.7, 3), class = "Intercept") +
+  prior(normal(0, 1), class = "b") +
+  prior(student_t(3, 0, 3), class = "sigma") +
+  prior(student_t(3, 0, 3), class = "sd") +
+  prior(beta(1, 1), class = "hu")
+```
+
+## Prior only model 
+
+```{r}
+b_prior_mod_herbs_2 <- brm(b_herbs_form_2,
+                    data = fg_biom,
+                    prior = b_priors_herbs_2,
+                    sample_prior = "only",
+                    iter = 5000,
+                    warmup = 1000,
+                    chains = 3,
+                    cores = 6,
+                    thin = 5,
+                    control = list(adapt_delta = 0.99,
+                                   max_treedepth = 20),
+                    refresh = 0)
+```
+
+# Fit model
+
+```{r}
+#| cache: true
+b_mod_herbs_2 <- update(b_prior_mod_herbs_2,
+                  sample_prior = "yes",
+                    iter = 10000,
+                    warmup = 2000,
+                    refresh = 2000)
+```
+
+## Traceplots
+
+```{r}
+# prep
+par_biom_mod <- b_mod_herbs_2 |>  
+  get_variables() |> 
+  str_subset("^b_.*")
+
+# trace
+b_mod_herbs_2 |> mcmc_plot(type = "trace",
+                         par = par_biom_mod)
+ 
+# autocorr
+b_mod_herbs_2 |> mcmc_plot(type = "acf_bar",
+                         par = par_biom_mod)
+  
+# rhat
+b_mod_herbs_2  |> mcmc_plot(type = "rhat_hist")
+
+# ess
+b_mod_herbs_2  |> mcmc_plot(type = "neff_hist")
+```
+
+## Residuals
+
+```{r}
+b_mod_herbs_resids <- make_brms_dharma_res(b_mod_herbs_2)
+
+# qqplot
+b_mod_herbs_resids |> testUniformity()
+
+#residplot
+b_mod_herbs_resids |> plotResiduals(quantreg = FALSE)
+```
+
+#### Save model
+
+```{r}
+save(b_mod_herbs_2, file = "Model_Outputs/b_mod_herbs_2.Rdata")
+```
+
+# CROPPERS
+
+## Define formula
+
+```{r}
+b_crop_form <-
+bf(cropper ~ 
+       Depth_m +
+       Aspect_descriptive +
+       Benthic_Complexity + 
+       Habitat +
+       (1 | Reef_2/Site),
+     family = hurdle_lognormal())
+```
+
+## Data exploration
+
+```{r}
+fg_biom |> 
+  group_by(Depth_m,
+           Aspect_descriptive,
+           Habitat,
+           Benthic_Complexity) |>
+  summarise(log_median = log(median(cropper)),
+            log_mad = log(mad(cropper))) |> 
+  arrange(log_median) |> 
+  filter(log_median != "-Inf") |> 
+  filter(log_mad != "-Inf")
+```
+
+## Weakly informative priors
+
+```{r}
+b_priors_crop <- prior(normal(1.9, 1.5), class = "Intercept") + #1.5, 0.5
+  prior(normal(0, 1.2), class = "b") + # 3
+  prior(student_t(3, 0, 1.5), class = "sigma") +
+  prior(student_t(3, 0, 1.5), class = "sd") +
+  prior(beta(1, 1), class = "hu")
+```
+
+## Prior model
+
+```{r}
+b_prior_crop_mod <- brm(b_crop_form,
+                    data = fg_biom,
+                    prior = b_priors_crop,
+                    sample_prior = "only",
+                    iter = 5000,
+                    warmup = 1000,
+                    chains = 3,
+                    cores = 6,
+                    thin = 5,
+                    control = list(adapt_delta = 0.99,
+                                   max_treedepth = 20),
+                    refresh = 0)
+```
+
+# Fit model
+
+```{r}
+#| cache: true
+b_mod_crop <- update(b_prior_crop_mod,
+                  sample_prior = "yes",
+                    iter = 10000,
+                    warmup = 2000,
+                    refresh = 2000)
+```
+
+## Traceplots
+
+```{r}
+# prep
+par_crop_mod <- b_mod_crop |>  
+  get_variables() |> 
+  str_subset("^b_.*")
+
+# trace
+b_mod_crop |> mcmc_plot(type = "trace",
+                         par = par_crop_mod)
+ 
+# autocorr
+b_mod_crop |> mcmc_plot(type = "acf_bar",
+                         par = par_crop_mod)
+  
+# rhat
+b_mod_crop  |> mcmc_plot(type = "rhat_hist")
+
+# ess
+b_mod_crop |> mcmc_plot(type = "neff_hist")
+```
+
+## Residuals
+
+```{r}
+b_mod_crop_resids <- make_brms_dharma_res(b_mod_crop)
+
+# qqplot
+b_mod_crop_resids  |> testUniformity()
+
+#residplot
+b_mod_crop_resids  |> plotResiduals(quantreg = FALSE)
+```
+
+#### Save model
+
+```{r}
+save(b_mod_crop, file = "Model_Outputs/b_mod_crop.Rdata")
+```
+
+# DETRITIVORES
+
+## Define formula
+
+```{r}
+b_det_form <- 
+  bf(detritivore ~ 
+       Depth_m +
+       Aspect_descriptive +
+       Benthic_Complexity + 
+       Habitat +
+       (1 | Reef_2/Site),
+     family = hurdle_lognormal())
+```
+
+## Data exploration
+
+```{r}
+fg_biom |> 
+  group_by(Depth_m,
+           Aspect_descriptive) |>
+  summarise(log_median = log(median(detritivore)),
+            log_mad = log(mad(detritivore))) |> 
+  arrange(-log_median)
+```
+
+## Weakly informative prior
+
+```{r}
+b_priors_det <- prior(normal(1.1, 1), class = "Intercept") +
+  prior(normal(0, 1.1), class = "b") +
+  prior(student_t(3, 0, 1), class = "sigma") +
+  prior(student_t(3, 0, 1), class = "sd") +
+  prior(beta(1, 1), class = "hu")
+```
+
+## Prior model
+
+```{r}
+b_prior_mod_det <- brm(b_det_form,
+                    data = fg_biom,
+                    prior = b_priors_det,
+                    sample_prior = "only",
+                    iter = 5000,
+                    warmup = 1000,
+                    chains = 3,
+                    cores = 6,
+                    thin = 5,
+                    control = list(adapt_delta = 0.99,
+                                   max_treedepth = 20),
+                    refresh = 0)
+```
+
+# Fit model
+
+```{r}
+#| cache: true
+b_mod_det <- update(b_prior_mod_det,
+                  sample_prior = "yes",
+                    iter = 10000,
+                    warmup = 2000,
+                    refresh = 2000)
+```
+
+## Traceplots
+
+```{r}
+# prep
+b_par_det_mod <- b_mod_det |>  
+  get_variables() |> 
+  str_subset("^b_.*")
+
+# trace
+b_mod_det |> mcmc_plot(type = "trace",
+                         par = b_par_det_mod)
+ 
+# autocorr
+b_mod_det |> mcmc_plot(type = "acf_bar",
+                         par = b_par_det_mod)
+  
+# rhat
+b_mod_det  |> mcmc_plot(type = "rhat_hist")
+
+# ess
+b_mod_det |> mcmc_plot(type = "neff_hist")
+```
+
+## Residuals
+
+```{r}
+b_mod_det_resids <- make_brms_dharma_res(b_mod_det)
+
+# qqplot
+b_mod_det_resids |> testUniformity()
+
+#residplot
+b_mod_det_resids |> plotResiduals(quantreg = FALSE)
+```
+
+#### Save model
+
+```{r}
+save(b_mod_det, file = "Model_Outputs/b_mod_det.Rdata")
+```
+
+# SCRAPERS
+
+## Define formula
+
+```{r}
+b_scra_form <-
+bf(scraper ~ 
+        Depth_m +
+       Aspect_descriptive +
+       Benthic_Complexity + 
+       Habitat +
+       (1 | Reef_2/Site),
+     family = hurdle_lognormal())
+```
+
+## Data exploration
+
+```{r}
+fg_biom |> 
+  group_by(Depth_m,
+           Aspect_descriptive) |>
+  summarise(log_median = log(median(scraper)),
+            log_mad = log(mad(scraper))) |> 
+  arrange(log_median) |> 
+  filter(log_median != "-Inf") |> 
+  filter(log_mad != "-Inf")
+```
+
+
+## Weakly informative prior
+
+```{r}
+b_priors_scra <- prior(normal(2.3, 2.7), class = "Intercept") +
+  prior(normal(0, 0.8), class = "b") +
+  prior(student_t(3, 0, 2.7), class = "sigma") +
+  prior(student_t(3, 0, 2.7), class = "sd") +
+  prior(beta(1, 1), class = "hu")
+```
+
+## Prior model
+
+```{r}
+b_prior_mod_scra <- brm(b_scra_form,
+                    data = fg_biom,
+                    prior = b_priors_scra,
+                    sample_prior = "only",
+                    iter = 5000,
+                    warmup = 1000,
+                    chains = 3,
+                    cores = 6,
+                    thin = 5,
+                    control = list(adapt_delta = 0.99,
+                                   max_treedepth = 20),
+                    refresh = 0)
+```
+
+# Fit model
+
+```{r}
+#| cache: true
+b_mod_scra <- update(b_prior_mod_scra,
+                  sample_prior = "yes",
+                    iter = 10000,
+                    warmup = 2000,
+                    refresh = 2000)
+```
+
+## Traceplots
+
+```{r}
+# prep
+b_par_scra_mod <- b_mod_scra |>  
+  get_variables() |> 
+  str_subset("^b_.*")
+
+# trace
+b_mod_scra |> mcmc_plot(type = "trace",
+                         par = b_par_scra_mod)
+ 
+# autocorr
+b_mod_scra |> mcmc_plot(type = "acf_bar",
+                         par = b_par_scra_mod)
+  
+# rhat
+b_mod_scra  |> mcmc_plot(type = "rhat_hist")
+
+# ess
+b_mod_scra |> mcmc_plot(type = "neff_hist")
+```
+
+## Residuals
+
+```{r}
+b_mod_scra_resids <- make_brms_dharma_res(b_mod_scra)
+
+# qqplot
+b_mod_scra_resids |> testUniformity()
+
+#residplot
+b_mod_scra_resids |> plotResiduals(quantreg = FALSE)
+```
+
+#### Save model
+
+```{r}
+save(b_mod_scra, file = "Model_Outputs/b_mod_scra.Rdata")
+```
+
+# EXCAVATORS
+
+## Define formula
+
+```{r}
+b_exc_form <-
+bf(excavator ~ 
+       Depth_m +
+       Aspect_descriptive +
+       Benthic_Complexity + 
+       Habitat +
+       (1 | Reef_2/Site),
+     family = hurdle_lognormal())
+```
+
+## Data exploration
+
+```{r}
+fg_biom |> 
+  group_by(Depth_m,
+           Aspect_descriptive) |>
+  summarise(log_median = log(median(excavator)),
+            log_mad = log(mad(excavator))) |> 
+  arrange(-log_median) |> 
+  filter(log_median != "-Inf") |> 
+  filter(log_mad != "-Inf")
+```
+
+## Weakly informative prior
+
+```{r}
+b_priors_exc <- prior(normal(1.4, 1.8), class = "Intercept") +
+  prior(normal(0, 0.7), class = "b") +
+  prior(student_t(3, 0, 1.8), class = "sigma") +
+  prior(student_t(3, 0, 1.8), class = "sd") +
+  prior(beta(1, 1), class = "hu")
+```
+
+## Prior model
+
+```{r}
+b_prior_mod_exc <- brm(b_exc_form,
+                    data = fg_biom,
+                    prior = b_priors_exc,
+                    sample_prior = "only",
+                    iter = 5000,
+                    warmup = 1000,
+                    chains = 3,
+                    cores = 6,
+                    thin = 5,
+                    control = list(adapt_delta = 0.99,
+                                   max_treedepth = 20),
+                    refresh = 0)
+```
+
+# Fit model
+
+```{r}
+#| cache: true
+b_mod_exc <- update(b_prior_mod_exc,
+                  sample_prior = "yes",
+                    iter = 10000,
+                    warmup = 2000,
+                    refresh = 2000)
+```
+
+## Traceplots
+
+```{r}
+# prep
+b_par_exc_mod <- b_mod_exc |>  
+  get_variables() |> 
+  str_subset("^b_.*")
+
+# trace
+b_mod_exc |> mcmc_plot(type = "trace",
+                         par = b_par_exc_mod)
+ 
+# autocorr
+b_mod_exc |> mcmc_plot(type = "acf_bar",
+                         par = b_par_exc_mod)
+  
+# rhat
+b_mod_exc |> mcmc_plot(type = "rhat_hist")
+
+# ess
+b_mod_exc |> mcmc_plot(type = "neff_hist")
+```
+
+## Residuals
+
+```{r}
+b_mod_exc_resids <- make_brms_dharma_res(b_mod_exc)
+
+# qqplot
+b_mod_exc_resids |> testUniformity()
+
+#residplot
+b_mod_exc_resids |> plotResiduals(quantreg = FALSE)
+```
+
+#### Save model
+
+```{r}
+save(b_mod_exc, file = "Model_Outputs/b_mod_exc.Rdata")
+```
+
+# BROWSERS
+
+## Define formula
+
+```{r}
+b_brow_form <-
+bf(browser ~ 
+       Depth_m +
+       Aspect_descriptive +
+       Benthic_Complexity + 
+       Habitat +
+       (1 | Reef_2/Site),
+     family = hurdle_lognormal())
+```
+
+## Data exploration
+
+```{r}
+fg_biom |> 
+  group_by(Depth_m) |>
+  summarise(log_median = log(median(browser)),
+            log_mad = log(mad(browser))) |> 
+  arrange(-log_median) |> 
+  filter(log_median != "-Inf") |> 
+  filter(log_mad != "-Inf")
+```
+
+## Weakly informative prior
+
+```{r}
+b_priors_brow <- prior(normal(0.5, 0.9), class = "Intercept") +
+  prior(normal(0, 0.5), class = "b") +
+  prior(student_t(3, 0, 0.9), class = "sigma") +
+  prior(student_t(3, 0, 0.9), class = "sd") +
+  prior(beta(1, 1), class = "hu")
+```
+
+## Prior model
+
+```{r}
+b_prior_mod_brow <- brm(b_brow_form,
+                    data = fg_biom,
+                    prior = b_priors_brow,
+                    sample_prior = "only",
+                    iter = 5000,
+                    warmup = 1000,
+                    chains = 3,
+                    cores = 6,
+                    thin = 5,
+                    control = list(adapt_delta = 0.99,
+                                   max_treedepth = 20),
+                    refresh = 0)
+```
+
+## Prior evaluation
+
+```{r}
+b_prior_mod_brow |> conditional_effects() |> 
+  plot(points = TRUE,
+       ask = FALSE,
+       plot = FALSE) |> 
+  wrap_plots() & 
+  scale_y_log10()
+```
+
+# Fit model
+
+```{r}
+#| cache: true
+b_mod_brow <- update(b_prior_mod_brow,
+                  sample_prior = "yes",
+                    iter = 10000,
+                    warmup = 2000,
+                    refresh = 2000)
+```
+
+## Traceplots
+
+```{r}
+# prep
+b_par_brow_mod <- b_mod_brow  |>  
+  get_variables() |> 
+  str_subset("^b_.*")
+
+# trace
+b_mod_brow |> mcmc_plot(type = "trace",
+                         par = b_par_brow_mod)
+ 
+# autocorr
+b_mod_brow |> mcmc_plot(type = "acf_bar",
+                         par = b_par_brow_mod)
+  
+# rhat
+b_mod_brow |> mcmc_plot(type = "rhat_hist")
+
+# ess
+b_mod_brow |> mcmc_plot(type = "neff_hist")
+```
+
+## Residuals
+
+```{r}
+b_mod_brow_resids <- make_brms_dharma_res(b_mod_brow)
+
+# qqplot
+b_mod_brow_resids |> testUniformity()
+
+#residplot
+b_mod_brow_resids |> plotResiduals(quantreg = FALSE)
+```
+
+#### Save model
+
+```{r}
+save(b_mod_brow, file = "Model_Outputs/b_mod_brow.Rdata")
+```

@@ -1,0 +1,2680 @@
+---
+title: "abun_results_plots"
+format: html
+editor: visual
+---
+
+# Cleanup
+
+```{r}
+rm(list=ls())
+gc()
+```
+
+Quarto document for interpreting and plotting abundance among depth bands, slope orientation and benthic complexity.
+
+# Load library
+
+```{r}
+#| label: libraries
+#| output: false
+#| eval: true
+#| warning: false
+#| message: false
+#| cache: false
+
+library(tidyverse)
+#library(rstanarm)
+library(brms)
+library(coda)
+library(bayesplot)
+library(DHARMa)
+library(emmeans)
+library(broom)
+library(tidybayes)
+library(ggeffects)
+library(broom.mixed)
+library(bayestestR)
+library(see)
+library(easystats)
+library(patchwork)
+library(ggridges)
+source("helperFunctions.R")
+library(ggimage)
+library(vegan)
+library(BiodiversityR)
+library(ggrepel)
+```
+
+# HERBIVORES
+
+## Load model
+
+```{r}
+load("Model_Outputs/herbs_mod.Rdata")
+```
+
+## Exceedence probability
+
+```{r}
+herbs_mod |> as_draws_df() |> 
+  dplyr::select(matches("^b_.*")) |> 
+  exp() |> 
+  summarise_draws(median,
+                  HDInterval::hdi, # logscale so exponentiate
+                  Pl= ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+## DEPTH
+
+## Newdata herbs
+
+```{r}
+depth_newdata <- with(fg_abun,
+                 data.frame(Depth_m = seq(min(Depth_m),
+                                          max(Depth_m),
+                                          length = 100)))
+```
+
+## Predict herbs
+
+```{r, cache=TRUE}
+herbs_depth_pred <- 
+  herbs_mod |> 
+  emmeans(~ Depth_m, 
+          at = depth_newdata, 
+          type = "response",
+          rg.limit = 12000) |> 
+  as.data.frame()
+```
+
+### Herbs depth plot
+
+```{r}
+p_depth_allherbs_A <-
+herbs_depth_pred |> 
+  ggplot(aes(y = prob,
+             x = Depth_m)) +
+    geom_point(data = fg_abun,
+             aes(y = herbs),
+             size = 2.5, 
+             shape = 21,
+             color = "#8AA17D",
+             fill = "#8AA17D",
+             alpha = 0.3) +
+  geom_line(linewidth = 2,
+            color = "#8AA17D") +
+  geom_ribbon(aes(ymin = lower.HPD,
+                  ymax = upper.HPD),
+              fill = "#8AA17D",
+              color = "#8AA17D",
+              alpha = 0.6) +
+  scale_y_continuous(expression(Abundance~(ind.150m^-2)),
+                       limits = c(0, 60),
+  breaks = seq(0, 60, by = 20)) +
+  scale_x_continuous(name = "",
+                     breaks = seq(0, 100, by = 20)) +
+geom_image(data = tibble(Depth_m = 90,
+                            prob = 57),
+                            aes(image = ("Images/naso.png")),
+                            size = 0.30) +
+  geom_image(data = tibble(Depth_m = 90,
+                            prob = 47),
+                            aes(image = ("Images/ctenochaetus.png")),
+                            size = 0.30) +
+  geom_image(data = tibble(Depth_m = 70,
+                            prob = 57),
+                            aes(image = ("Images/scarus.png")),
+                            size = 0.30) +
+    geom_image(data = tibble(Depth_m = 70,
+                            prob = 47),
+                            aes(image = ("Images/chlorurus.png")),
+                            size = 0.30) +
+  ggtitle("Total herbivores") +
+  theme_classic() +
+     theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        plot.title = element_text(size = 18)) + 
+  theme(legend.position = "none") 
+```
+
+## SLOPE
+
+## Herbs slope newdata
+
+```{r}
+herbs_nd_slope <- 
+  emmeans(herbs_mod,
+          ~Aspect_descriptive,
+           type = "response") |> 
+  as.data.frame()
+```
+
+### Herbs slope plot
+
+```{r}
+p_slope_allherbs_A <- 
+herbs_nd_slope |> 
+  ggplot(aes(x = Aspect_descriptive,
+             y = prob)) +
+  geom_pointrange(aes(ymin = lower.HPD,
+                      ymax = upper.HPD),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#8AA17D",
+                  fill = "#8AA17D") +
+  scale_y_continuous(Abundance~(ind.150m^-2),
+                     limits = c(0, 12),
+                     breaks = seq(0, 12, by = 2)) +
+  scale_x_discrete(name = "") +
+  theme_classic() +
+  ggtitle("Total herbivores") +
+     theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y = element_text(size = 12),
+        axis.title.y = element_text(size = 15),
+        plot.title = element_text(size = 18)) +
+    geom_image(data = tibble(Aspect_descriptive = 5,
+                           prob = 11),
+             aes(image = "Images/naso.png"),
+             size = 0.30) +
+    geom_image(data = tibble(Aspect_descriptive = 5,
+                           prob = 9),
+             aes(image = "Images/ctenochaetus.png"),
+             size = 0.30) +
+      geom_image(data = tibble(Aspect_descriptive = 4,
+                           prob = 11),
+             aes(image = "Images/scarus.png"),
+             size = 0.30) +
+    geom_image(data = tibble(Aspect_descriptive = 4,
+                           prob = 9),
+             aes(image = "Images/chlorurus.png"),
+             size = 0.30)
+```
+
+#### Pairwise for herbs slope
+
+```{r}
+herbs_mod |> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+##### Plot slope contrasts
+
+```{r}
+# prepare db
+abun_slope_pair <-
+  herbs_mod |> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) 
+
+# plot  
+ p_abun_slope_pair <- ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = abun_slope_pair |> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = abun_slope_pair |> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#8AA17D",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  scale_x_discrete(name = "Constrast: slope orientation") +
+  scale_y_continuous(name = "Scaled effect size",
+                   trans = scales::log2_trans()) +
+  ggtitle("Abundance") +
+  theme(axis.title.x = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        plot.title = element_text(size = 18))
+```
+
+## BENTHIC COMPLEXITY
+
+### Herbs benthic complexity newdata
+
+```{r}
+herbs_nd_bc <- 
+  emmeans(herbs_mod,
+          ~Benthic_Complexity,
+           type = "response") |> 
+  as.data.frame()
+```
+
+#### Herbs BC plot
+
+```{r}
+p_bc_allherbs_A <- 
+herbs_nd_bc |> 
+  ggplot(aes(x = Benthic_Complexity,
+             y = prob)) +
+  geom_pointrange(aes(ymin = lower.HPD,
+                      ymax = upper.HPD),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#8AA17D",
+                  fill = "#8AA17D") +
+  scale_y_continuous(Abundance~(ind.150m^-2),
+                     limits = c(0, 12),
+                     breaks = seq(0, 12, by = 2)) +
+  scale_x_discrete(name = "") +
+  theme_classic() +
+  ggtitle("Total herbivores") +
+     theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y = element_text(size = 12),
+        axis.title.y = element_text(size = 15),
+        plot.title = element_text(size = 18)) +
+    geom_image(data = tibble(Benthic_Complexity = 5.2,
+                           prob = 11),
+             aes(image = "Images/naso.png"),
+             size = 0.30) +
+    geom_image(data = tibble(Benthic_Complexity = 5.2,
+                           prob = 9),
+             aes(image = "Images/ctenochaetus.png"),
+             size = 0.30) +
+      geom_image(data = tibble(Benthic_Complexity = 4,
+                           prob = 11),
+             aes(image = "Images/scarus.png"),
+             size = 0.30) +
+    geom_image(data = tibble(Benthic_Complexity = 4,
+                           prob = 9),
+             aes(image = "Images/chlorurus.png"),
+             size = 0.30)
+```
+
+##### Pairwise for herbs BC
+
+```{r}
+herbs_mod |> emmeans(~Benthic_Complexity,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+##### Plot BC contrasts
+
+```{r}
+#prepare db
+th_abun_bc_pair <- 
+  herbs_mod |> 
+  emmeans(~ Benthic_Complexity,
+          type = "link") |> 
+  #subset(Habitat != "passage") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) |> 
+  as.data.frame()
+
+# plot   
+ p_th_abun_bc_pair <- 
+   ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = th_abun_bc_pair |> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = th_abun_bc_pair |> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#8AA17D",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+ scale_x_discrete(name = "Contrast: benthic complexity",
+                   labels = function(x) gsub("_", " ", x)) +
+  scale_y_continuous(name = "Scaled effect size",
+                   trans = scales::log2_trans(),
+                   breaks = seq(0, 2, by = 0.5)) +
+  ggtitle("Total herbivores") +
+  theme(axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+## REEF ZONE
+
+## Herbs reef zone newdata
+
+```{r}
+herbs_nd_zone <- 
+  emmeans(herbs_mod,
+          ~Habitat,
+           type = "response") |> 
+  as.data.frame() |> 
+  filter(Habitat != "passage") |> 
+  mutate(Habitat = factor(Habitat,
+                          levels = c("lagoon",
+                                     "inner_reef",
+                                     "outer_slope"))) |> 
+  mutate(Habitat = recode(Habitat,
+                          "inner_reef" = "inner reef",
+                          "outer_slope" = "outer reef"))
+  
+```
+
+### Herbs zone plot
+
+```{r}
+p_zone_allherbs_A <- 
+herbs_nd_zone |> 
+  ggplot(aes(x = Habitat,
+             y = prob)) +
+  geom_pointrange(aes(ymin = lower.HPD,
+                      ymax = upper.HPD),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#8AA17D",
+                  fill = "#8AA17D") +
+  scale_y_continuous(Abundance~(ind.150m^-2),
+                     limits = c(0, 8),
+                     breaks = seq(0, 8, by = 2)) +
+  scale_x_discrete(name = "") +
+  theme_classic() +
+  ggtitle("Total herbivores") +
+     theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y = element_text(size = 12),
+        axis.title.y = element_text(size = 15),
+        plot.title = element_text(size = 18)) +
+    geom_image(data = tibble(Habitat = 3.2,
+                           prob = 7),
+             aes(image = "Images/naso.png"),
+             size = 0.30) +
+    geom_image(data = tibble(Habitat = 3.2,
+                           prob = 5.5),
+             aes(image = "Images/ctenochaetus.png"),
+             size = 0.30) +
+      geom_image(data = tibble(Habitat = 2.5,
+                           prob = 7),
+             aes(image = "Images/scarus.png"),
+             size = 0.30) +
+    geom_image(data = tibble(Habitat = 2.5,
+                           prob =5.5),
+             aes(image = "Images/chlorurus.png"),
+             size = 0.30)
+```
+
+##### Plot zone contrasts
+
+```{r}
+# prepare db
+th_abun_zone_pair <- 
+  herbs_mod |> 
+  emmeans(~ Habitat,
+          type = "link") |> 
+  subset(Habitat != "passage") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) |> 
+  as.data.frame()
+
+# plot  
+ p_th_abun_zone_pair <- 
+   ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = th_abun_zone_pair |> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = th_abun_zone_pair |> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#8AA17D",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  scale_x_discrete(name = "Contrast: reef zone",
+                   labels = function(x) gsub("_", " ", x)) +
+  scale_y_continuous(name = "Scaled effect size",
+                   trans = scales::log2_trans(),
+                   breaks = seq(0, 2, by = 0.5)) +
+  ggtitle("Total herbivores") +
+  theme(axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+# BROWSERS
+
+## Load model
+
+```{r}
+load("Model_Outputs/brow_mod.Rdata")
+```
+
+## Exceedence probability
+
+```{r}
+brow_mod |> as_draws_df() |> 
+  dplyr::select(matches("^b_.*")) |> 
+  exp() |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl= ~mean(.x < 1),
+                  Pg = ~mean(.x > 1))|> 
+  filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+## Brow predict
+
+```{r, cache=TRUE}
+brow_depth_pred <- 
+  brow_mod |> 
+  emmeans(~ Depth_m, 
+          at = depth_newdata, 
+          type = "response",
+          rg.limit = 12000) |> 
+  as.data.frame()
+```
+
+### Brow depth plot
+
+```{r}
+p_depth_brow_A <- 
+brow_depth_pred |> 
+  ggplot(aes(y = prob,
+             x = Depth_m)) +
+    geom_point(data = fg_abun,
+             aes(y = browser),
+             size = 2.5,
+             shape = 21,
+             color = "#929FBD",
+             fill = "#929FBD",
+             alpha = 0.3) +
+  geom_line(linewidth = 2,
+            color = "#929FBD") +
+  geom_ribbon(aes(ymin = lower.HPD,
+                  ymax = upper.HPD),
+              fill = "#929FBD",
+              color = "#929FBD",
+              alpha = 0.6) +
+  scale_y_continuous(name = "",
+                       limits = c(0, 60),
+    breaks = seq(0, 60, by = 20)) +
+  scale_x_continuous(name = "",
+                     breaks = seq(0, 100, by = 20)) +
+  theme_classic() +
+  ggtitle("Browsers") +
+   theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Depth_m = 90,
+                           prob = 57),
+             aes(image = "Images/naso.png"),
+             size = 0.30)
+```
+
+## SLOPE
+
+### Brow slope newdata
+
+```{r}
+brow_nd_slope <- emmeans(brow_mod,
+                          ~Aspect_descriptive,
+                          type = "response") |> 
+  as.data.frame()
+```
+
+#### Brow slope plot
+
+```{r}
+p_slope_brow_A <- 
+brow_nd_slope |> 
+  ggplot(aes(x = Aspect_descriptive,
+             y = prob)) +
+  geom_pointrange(aes(ymin = lower.HPD,
+                      ymax = upper.HPD),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#929FBD",
+                  fill = "#929FBD") +
+  scale_y_continuous(name = "",
+                     limits = c(0, 6),
+                     breaks = seq(0, 6, by = 2)) +
+  scale_x_discrete(name = "") +
+  theme_classic() +
+  ggtitle("Browsers") +
+     theme(axis.title=element_blank(),
+        axis.text=element_blank(),
+        axis.ticks=element_blank(),
+        #axis.text.y = element_text(size = 12),
+        #axis.title.y = element_text(size = 15),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Aspect_descriptive = 5,
+                           prob = 5.5),
+             aes(image = "Images/naso.png"),
+             size = 0.30)
+```
+
+##### Slope pairwise
+
+```{r}
+brow_mod|> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+###### Plot pairwise
+
+```{r}
+#prepare db
+brow_abun_slope_pair <- brow_mod |> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) 
+
+# plot  
+ p_brow_abun_slope_pair <- ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = brow_abun_slope_pair|> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = brow_abun_slope_pair|> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#929FBD",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  scale_x_discrete(name = "Constrast: slope orientation",
+                   labels = function(x) gsub("_", " ", x)) +
+  scale_y_continuous(name = "",
+                   trans = scales::log2_trans()) +
+  ggtitle("Browsers") +
+  theme(axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+## BENTHIC COMPLEXITY
+
+## Brow benthic complexity newdata
+
+```{r}
+brow_nd_bc <- 
+  emmeans(brow_mod,
+          ~Benthic_Complexity,
+           type = "response") |> 
+  as.data.frame()
+```
+
+### Brow slope plot
+
+```{r}
+p_bc_brow_A <- 
+brow_nd_bc |> 
+  ggplot(aes(x = Benthic_Complexity,
+             y = prob)) +
+  geom_pointrange(aes(ymin = lower.HPD,
+                      ymax = upper.HPD),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#929FBD",
+                  fill = "#929FBD") +
+  scale_y_continuous(name = "",
+                     limits = c(0, 6),
+                     breaks = seq(0, 6, by = 2)) +
+  scale_x_discrete(name = "") +
+  theme_classic() +
+  ggtitle("Browsers") +
+     theme(axis.title=element_blank(),
+        axis.text=element_blank(),
+        axis.ticks=element_blank(),
+        #axis.text.y = element_text(size = 12),
+        #axis.title.y = element_text(size = 15),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Benthic_Complexity = 5.5,
+                           prob = 5.5),
+             aes(image = "Images/naso.png"),
+             size = 0.30)
+```
+
+#### Benthic complexity pairwise
+
+```{r}
+brow_mod |> 
+  emmeans(~Benthic_Complexity,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+##### Plot BC contrasts
+
+```{r}
+#prepare db
+brow_abun_bc_pair <- 
+  brow_mod |> 
+  emmeans(~ Benthic_Complexity,
+          type = "link") |> 
+  #subset(Habitat != "passage") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) |> 
+  as.data.frame()
+
+# plot  
+ p_brow_abun_bc_pair <- 
+   ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = brow_abun_bc_pair |> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = brow_abun_bc_pair |> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#929FBD",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  #scale_y_continuous(name = "",
+   #                trans = scales::log2_trans(),
+    #               breaks = seq(0, 2, by = 0.5)) +
+  ggtitle("Browsers") +
+  theme(axis.title.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+    axis.title.x = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+## REEF ZONE
+
+### Brow reef zone newdata
+
+```{r}
+brow_nd_zone <- 
+  emmeans(brow_mod,
+          ~Habitat,
+           type = "response") |> 
+  as.data.frame() |> 
+  filter(Habitat != "passage") |> 
+  mutate(Habitat = factor(Habitat,
+                          levels = c("lagoon",
+                                     "inner_reef",
+                                     "outer_slope"))) |> 
+  mutate(Habitat = recode(Habitat,
+                          "inner_reef" = "inner reef",
+                          "outer_slope" = "outer reef"))
+  
+```
+
+### Brow zone plot
+
+```{r}
+p_zone_brow_A <- 
+brow_nd_zone |> 
+  ggplot(aes(x = Habitat,
+             y = prob)) +
+  geom_pointrange(aes(ymin = lower.HPD,
+                      ymax = upper.HPD),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#929FBD",
+                  fill = "#929FBD") +
+  scale_y_continuous(name = "",
+                     limits = c(0, 4),
+                     breaks = seq(0, 4, by = 2)) +
+  scale_x_discrete(name = "") +
+  theme_classic() +
+  ggtitle("Browsers") +
+     theme(axis.title=element_blank(),
+        axis.text=element_blank(),
+        axis.ticks=element_blank(),
+        #axis.text.y = element_text(size = 12),
+        #axis.title.y = element_text(size = 15),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Habitat = 3,2,
+                           prob = 3.5),
+             aes(image = "Images/naso.png"),
+             size = 0.30)
+```
+
+#### Plot zone contrasts
+
+```{r}
+# prepare db
+brow_abun_zone_pair <- 
+  brow_mod |> 
+  emmeans(~ Habitat,
+          type = "link") |> 
+  subset(Habitat != "passage") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) |> 
+  as.data.frame()
+
+# plot
+ p_brow_abun_zone_pair <- 
+   ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = brow_abun_zone_pair |> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = brow_abun_zone_pair |> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#929FBD",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  #scale_y_continuous(name = "",
+   #                trans = scales::log2_trans(),
+    #               breaks = seq(0, 2, by = 0.5)) +
+  ggtitle("Browsers") +
+  theme(axis.title.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+    axis.title.x = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+# CROPPERS
+
+## Load model
+
+```{r}
+load("Model_Outputs/crop_mod.Rdata")
+```
+
+## Exceedence probability
+
+```{r}
+crop_mod |> as_draws_df() |> 
+  dplyr::select(matches("^b_.*")) |> 
+  exp() |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl= ~mean(.x < 1),
+                  Pg = ~mean(.x > 1))|> 
+  filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+## Crop predict
+
+```{r, cache=TRUE}
+crop_depth_pred <- crop_mod |> 
+  emmeans(~ Depth_m, 
+          at = depth_newdata, 
+          type = "response",
+          rg.limit = 12000) |> 
+  as.data.frame()
+```
+
+### Crop depth plot
+
+```{r}
+p_depth_crop_A <- 
+crop_depth_pred |> 
+  ggplot(aes(y = prob,
+             x = Depth_m)) +
+    geom_point(data = fg_abun,
+             aes(y = cropper),
+             size = 2.5,
+             shape = 21,
+             color = "#DDD487",
+             fill = "#DDD487",
+             alpha = 0.3) +
+  geom_line(linewidth = 2,
+            color = "#DDD487") +
+  geom_ribbon(aes(ymin = lower.HPD,
+                  ymax = upper.HPD),
+              fill = "#DDD487",
+              color = "#DDD487",
+              alpha = 0.6) +
+  scale_y_continuous(expression(Abundance~(ind.150m^-2)),
+                       limits = c(0, 60),
+    breaks = seq(0, 60, by = 20)) +
+  scale_x_continuous(name = "",
+                     breaks = seq(0, 100, by = 20)) +
+  theme_classic() +
+  ggtitle("Croppers") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Depth_m = 90,
+                           prob = 57),
+             aes(image = "Images/siganid.png"),
+             size = 0.30)
+```
+
+## SLOPE
+
+### Crop slope newdata
+
+```{r}
+crop_nd_slope <- emmeans(crop_mod,
+                          ~Aspect_descriptive,
+                          type = "response") |> 
+  as.data.frame()
+```
+
+### Crop slope plot
+
+```{r}
+p_slope_crop_A <- 
+crop_nd_slope |> 
+  ggplot(aes(x = Aspect_descriptive,
+             y = prob)) +
+  geom_pointrange(aes(ymin = lower.HPD,
+                      ymax = upper.HPD),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#DDD487",
+                  fill = "#DDD487") +
+  scale_y_continuous(Abundance~(ind.150m^-2),
+                     limits = c(0, 6),
+                     breaks = seq(0, 6, by = 2)) +
+  scale_x_discrete(name = "") +
+  theme_classic() +
+  ggtitle("Croppers") + 
+    theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y = element_text(size = 12),
+        axis.title.y = element_text(size = 15),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Aspect_descriptive = 5,
+                           prob = 5.5),
+             aes(image = "Images/siganid.png"),
+             size = 0.30)
+```
+
+#### Slope pairwise
+
+```{r}
+crop_mod|> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+#### Plot pairwise
+
+```{r}
+# prepare db
+crop_abun_slope_pair <- crop_mod |> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) 
+
+# plot  
+ p_crop_abun_slope_pair <- ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = crop_abun_slope_pair|> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = crop_abun_slope_pair|> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#DDD487",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  scale_x_discrete(name = "") +
+  scale_y_continuous(name = "",
+                   trans = scales::log2_trans()) +
+  ggtitle("Croppers") +
+  theme(axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.title.x = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+# BENTHIC COMPLEXITY
+
+```{r}
+crop_nd_bc <- 
+  emmeans(crop_mod ,
+          ~Benthic_Complexity,
+           type = "response") |> 
+  as.data.frame()
+```
+
+## Crop bc plot
+
+```{r}
+p_bc_crop_A <- 
+crop_nd_bc |> 
+  ggplot(aes(x = Benthic_Complexity,
+             y = prob)) +
+  geom_pointrange(aes(ymin = lower.HPD,
+                      ymax = upper.HPD),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#DDD487",
+                  fill = "#DDD487") +
+  scale_y_continuous(Abundance~(ind.150m^-2),
+                     limits = c(0, 6),
+                     breaks = seq(0, 6, by = 2)) +
+  scale_x_discrete(name = "") +
+  theme_classic() +
+  ggtitle("Croppers") + 
+    theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y = element_text(size = 12),
+        axis.title.y = element_text(size = 15),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Benthic_Complexity = 5.5,
+                           prob = 5.5),
+             aes(image = "Images/siganid.png"),
+             size = 0.30)
+```
+
+### Pairwise crop benthic complexity
+
+```{r}
+crop_mod |> 
+  emmeans(~Benthic_Complexity,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+#### Plot BC contrasts
+
+```{r}
+# prepare db
+crop_abun_bc_pair <- 
+  crop_mod |> 
+  emmeans(~ Benthic_Complexity,
+          type = "link") |> 
+  #subset(Habitat != "passage") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) |> 
+  as.data.frame()
+
+# plot  
+ p_crop_abun_bc_pair <- 
+   ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = crop_abun_bc_pair |> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = crop_abun_bc_pair |> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#DDD487",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+ scale_x_discrete(name = "Contrast: benthic complexity",
+                   labels = function(x) gsub("_", " ", x)) +
+  ggtitle("Croppers") +
+  theme(
+    axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+## REEF ZONE
+
+## Crop reef zone newdata
+
+```{r}
+crop_nd_zone <- 
+  emmeans(crop_mod,
+          ~Habitat,
+           type = "response") |> 
+  as.data.frame() |> 
+  filter(Habitat != "passage") |> 
+  mutate(Habitat = factor(Habitat,
+                          levels = c("lagoon",
+                                     "inner_reef",
+                                     "outer_slope"))) |> 
+  mutate(Habitat = recode(Habitat,
+                          "inner_reef" = "inner reef",
+                          "outer_slope" = "outer reef"))
+  
+```
+
+## Crop zone plot
+
+```{r}
+p_zone_crop_A <- 
+crop_nd_zone |> 
+  ggplot(aes(x = Habitat,
+             y = prob)) +
+  geom_pointrange(aes(ymin = lower.HPD,
+                      ymax = upper.HPD),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#DDD487",
+                  fill = "#DDD487") +
+  scale_y_continuous(Abundance~(ind.150m^-2),
+                     limits = c(0, 4),
+                     breaks = seq(0, 4, by = 2)) +
+  scale_x_discrete(name = "") +
+  theme_classic() +
+  ggtitle("Croppers") + 
+    theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.y = element_text(size = 12),
+        axis.title.y = element_text(size = 15),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Habitat = 3,2,
+                           prob = 3.5),
+             aes(image = "Images/siganid.png"),
+             size = 0.30)
+```
+
+### Pairwise crop reef zone
+
+```{r}
+crop_mod |> 
+  emmeans(~Habitat,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+### Plot zone contrasts
+
+```{r}
+crop_abun_zone_pair <- 
+  crop_mod |> 
+  emmeans(~ Habitat,
+          type = "link") |> 
+  subset(Habitat != "passage") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) |> 
+  as.data.frame()
+  
+ p_crop_abun_zone_pair <- 
+   ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = crop_abun_zone_pair |> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = crop_abun_zone_pair |> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#DDD487",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+   scale_x_discrete(name = "Contrast: reef zone",
+                   labels = function(x) gsub("_", " ", x)) +
+    coord_flip() +
+  theme_classic() +
+  #scale_y_continuous(name = "",
+   #                trans = scales::log2_trans(),
+    #               breaks = seq(0, 2, by = 0.5)) +
+  ggtitle("Croppers") +
+  theme(
+    axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+# DETRITIVORES
+
+## Load model
+
+```{r}
+load("Model_Outputs/det_mod.Rdata")
+```
+
+## Exceedence probability
+
+```{r}
+det_mod |> as_draws_df() |> 
+  dplyr::select(matches("^b_.*")) |> 
+  exp() |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl= ~mean(.x < 1),
+                  Pg = ~mean(.x > 1))|> 
+  filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+## Det predict
+
+```{r, cache=TRUE}
+det_depth_pred <- 
+  det_mod |> 
+  emmeans(~ Depth_m, 
+          at = depth_newdata, 
+          type = "response",
+          rg.limit = 12000) |> 
+  as.data.frame()
+```
+
+### Det depth plot
+
+```{r}
+p_depth_det_A <- 
+det_depth_pred |> 
+  ggplot(aes(y = prob,
+             x = Depth_m)) +
+    geom_point(data = fg_abun,
+             aes(y = detritivore),
+             size = 2.5,
+             shape = 21,
+             color = "#BFB59E",
+             fill = "#BFB59E",
+             alpha = 0.3) +
+  geom_line(linewidth = 2,
+            color = "#BFB59E") +
+  geom_ribbon(aes(ymin = lower.HPD,
+                  ymax = upper.HPD),
+              fill = "#BFB59E",
+              color = "#BFB59E",
+              alpha = 0.6) +
+  scale_y_continuous(name = "",
+                       limits = c(0, 60),
+    breaks = seq(0, 60, by = 20)) +
+  scale_x_continuous(name = "",
+                     breaks = seq(0, 100, by = 20)) +
+  theme_classic() +
+  ggtitle("Detritivores") +
+   theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Depth_m = 90,
+                           prob = 57),
+             aes(image = "Images/ctenochaetus.png"),
+             size = 0.30)
+```
+
+## SLOPE
+
+### Det slope newdata
+
+```{r}
+det_nd_slope <- emmeans(det_mod,
+                          ~Aspect_descriptive,
+                          type = "response") |> 
+  as.data.frame()
+```
+
+#### Det slope plot
+
+```{r}
+p_slope_det_A <- 
+det_nd_slope |> 
+  ggplot(aes(x = Aspect_descriptive,
+             y = prob)) +
+  geom_pointrange(aes(ymin = lower.HPD,
+                      ymax = upper.HPD),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#BFB59E",
+                  fill = "#BFB59E") +
+  scale_y_continuous(name = "",
+                     limits = c(0, 6),
+                     breaks = seq(0, 6, by = 2)) +
+  scale_x_discrete(name = "") +
+  theme_classic() +
+  ggtitle("Detritivores") +
+     theme(axis.title=element_blank(),
+        axis.text=element_blank(),
+        axis.ticks=element_blank(),
+        #axis.text.y = element_text(size = 12),
+        #axis.title.y = element_text(size = 15),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Aspect_descriptive = 5,
+                           prob = 5.5),
+             aes(image = "Images/ctenochaetus.png"),
+             size = 0.30)
+```
+
+##### Slope pairwise
+
+```{r}
+det_mod|> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+###### Plot pairwise
+
+```{r}
+# prepare db
+det_abun_slope_pair <- det_mod |> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) 
+
+# plot
+ p_det_abun_slope_pair <- ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = det_abun_slope_pair|> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = det_abun_slope_pair|> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#BFB59E",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  scale_x_discrete(name = "") +
+  scale_y_continuous(name = "",
+                   trans = scales::log2_trans()) +
+  ggtitle("Detritivores") +
+  theme(axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.title.x = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+## BENTHIC COMPLEXITY
+
+```{r}
+det_nd_bc <- 
+  emmeans(det_mod ,
+          ~Benthic_Complexity,
+           type = "response") |> 
+  as.data.frame()
+```
+
+### Det bc plot
+
+```{r}
+p_bc_det_A <- 
+det_nd_bc |> 
+  ggplot(aes(x = Benthic_Complexity,
+             y = prob)) +
+  geom_pointrange(aes(ymin = lower.HPD,
+                      ymax = upper.HPD),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#BFB59E",
+                  fill = "#BFB59E") +
+  scale_y_continuous(name = "",
+                     limits = c(0, 6),
+                     breaks = seq(0, 6, by = 2)) +
+  scale_x_discrete(name = "") +
+  theme_classic() +
+  ggtitle("Detritivores") +
+      theme(axis.title=element_blank(),
+        axis.text=element_blank(),
+        axis.ticks=element_blank(),
+        #axis.text.y = element_text(size = 12),
+        #axis.title.y = element_text(size = 15),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Benthic_Complexity = 5.5,
+                           prob = 5.5),
+             aes(image = "Images/ctenochaetus.png"),
+             size = 0.30)
+```
+
+#### Pairwise crop benthic complexity
+
+```{r}
+det_mod |> 
+  emmeans(~Benthic_Complexity,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+##### Plot bc contrasts
+
+```{r}
+# prepare db
+det_abun_bc_pair <- 
+  det_mod |> 
+  emmeans(~ Benthic_Complexity,
+          type = "link") |> 
+  #subset(Habitat != "passage") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) |> 
+  as.data.frame()
+
+# plot  
+ p_det_abun_bc_pair <- 
+   ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = det_abun_bc_pair |> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = det_abun_bc_pair |> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#BFB59E",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  #scale_y_continuous(name = "",
+   #                trans = scales::log2_trans(),
+    #               breaks = seq(0, 2, by = 0.5)) +
+  ggtitle("Detritivores") +
+  theme(axis.title.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+    axis.title.x = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+## REEF ZONE
+
+## Det reef zone newdata
+
+```{r}
+det_nd_zone <- 
+  emmeans(det_mod,
+          ~Habitat,
+           type = "response") |> 
+  as.data.frame() |> 
+  filter(Habitat != "passage") |> 
+  mutate(Habitat = factor(Habitat,
+                          levels = c("lagoon",
+                                     "inner_reef",
+                                     "outer_slope"))) |> 
+  mutate(Habitat = recode(Habitat,
+                          "inner_reef" = "inner reef",
+                          "outer_slope" = "outer reef"))
+  
+```
+
+### Det zone plot
+
+```{r}
+p_zone_det_A <- 
+det_nd_zone |> 
+  ggplot(aes(x = Habitat,
+             y = prob)) +
+  geom_pointrange(aes(ymin = lower.HPD,
+                      ymax = upper.HPD),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#BFB59E",
+                  fill = "#BFB59E") +
+  scale_y_continuous(name = "",
+                     limits = c(0, 4),
+                     breaks = seq(0, 4, by = 2)) +
+  scale_x_discrete(name = "") +
+  theme_classic() +
+  ggtitle("Detritivores") +
+      theme(axis.title=element_blank(),
+        axis.text=element_blank(),
+        axis.ticks=element_blank(),
+        #axis.text.y = element_text(size = 12),
+        #axis.title.y = element_text(size = 15),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Habitat = 3.2,
+                           prob = 3.5),
+             aes(image = "Images/ctenochaetus.png"),
+             size = 0.30)
+```
+
+#### Plot zone contrasts
+
+```{r}
+# prepare db
+det_abun_zone_pair <- 
+  det_mod |> 
+  emmeans(~ Habitat,
+          type = "link") |> 
+  subset(Habitat != "passage") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) |> 
+  as.data.frame()
+
+# plot  
+ p_det_abun_zone_pair <- 
+   ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = det_abun_zone_pair |> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = det_abun_zone_pair |> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#BFB59E",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  #scale_y_continuous(name = "",
+   #                trans = scales::log2_trans(),
+    #               breaks = seq(0, 2, by = 0.5)) +
+  ggtitle("Detritivores") +
+  theme(axis.title.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+    axis.title.x = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+##### Pairwise crop benthic complexity
+
+```{r}
+det_mod |> 
+  emmeans(~Habitat,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+# EXCAVATORS
+
+## Load model
+
+```{r}
+load("Model_Outputs/exc_mod.Rdata")
+```
+
+## Exceedence probability
+
+```{r}
+exc_mod |> as_draws_df() |> 
+  dplyr::select(matches("^b_.*")) |> 
+  exp() |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl= ~mean(.x < 1),
+                  Pg = ~mean(.x > 1))|> 
+  filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+## Exc predict
+
+```{r, cache=TRUE}
+exc_depth_pred <- 
+  exc_mod |> 
+  emmeans(~ Depth_m, 
+          at = depth_newdata, 
+          type = "response",
+          rg.limit = 12000) |> 
+  as.data.frame()
+```
+
+### Exc depth plot
+
+```{r}
+p_depth_exc_A <- 
+exc_depth_pred |> 
+  ggplot(aes(y = prob,
+             x = Depth_m)) +
+    geom_point(data = fg_abun,
+             aes(y = excavator),
+             size = 2.5,
+             shape = 21,
+             color = "#E29297",
+             fill = "#E29297",
+             alpha = 0.3) +
+  geom_line(linewidth = 2,
+            color = "#E29297") +
+  geom_ribbon(aes(ymin = lower.HPD,
+                  ymax = upper.HPD),
+              fill = "#E29297",
+              color = "#E29297",
+              alpha = 0.6) +
+  scale_y_continuous(expression(Abundance~(ind.150m^-2)),
+                       limits = c(0, 60),
+    breaks = seq(0, 60, by = 20)) +
+  scale_x_continuous(name = "Depth (m)",
+                     breaks = seq(0, 100, by = 20)) +
+  theme_classic() +
+  ggtitle("Excavators") +
+   theme(
+        axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Depth_m = 90,
+                           prob = 57),
+             aes(image = "Images/chlorurus.png"),
+             size = 0.30)
+  
+```
+
+## SLOPE
+
+## Exc slope newdata
+
+```{r}
+exc_nd_slope <- emmeans(exc_mod,
+                          ~Aspect_descriptive,
+                          type = "response") |> 
+  as.data.frame()
+```
+
+### Exc slope plot
+
+```{r}
+p_slope_exc_A <- 
+exc_nd_slope |> 
+  ggplot(aes(x = Aspect_descriptive,
+             y = prob)) +
+  geom_pointrange(aes(ymin = lower.HPD,
+                      ymax = upper.HPD),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#E29297",
+                  fill = "#E29297") +
+  scale_y_continuous(Abundance~(ind.150m^-2),
+                     limits = c(0, 6),
+                     breaks = seq(0, 6, by = 2)) +
+  scale_x_discrete(name = "Slope orientation",
+                   labels = c("Flat",
+                              "Gentle slope",
+                              "Moderate slope",
+                              "Steep slope",
+                              "Wall")) +
+  theme_classic() +
+  ggtitle("Excavators") +
+  theme(axis.text.x = element_text(angle = 20,
+                                 vjust = 0.90,
+                                 hjust = 0.70,
+                                 size = 12),
+        axis.title = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Aspect_descriptive = 5,
+                           prob = 5.5),
+             aes(image = "Images/chlorurus.png"),
+             size = 0.30)
+```
+
+#### Slope pairwise
+
+```{r}
+exc_mod|> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+##### Plot pairwise
+
+```{r}
+# prepare db
+exc_abun_slope_pair <- exc_mod|> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) 
+
+# plot  
+ p_exc_abun_slope_pair <- ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = exc_abun_slope_pair|> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = exc_abun_slope_pair|> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#E29297",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  scale_x_discrete(name = "Contrast: slope orientation",
+                   labels = function(x) gsub("_", " ", x)) +
+  scale_y_continuous(name = "Scaled effect size",
+                   trans = scales::log2_trans()) +
+  ggtitle("Excavators") +
+  theme(
+        axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+## BENTHIC COMPLEXITY
+
+```{r}
+exc_nd_bc <- 
+  emmeans(exc_mod ,
+          ~Benthic_Complexity,
+           type = "response") |> 
+  as.data.frame()
+```
+
+### Exc bc plot
+
+```{r}
+p_bc_exc_A <- 
+exc_nd_bc |> 
+  ggplot(aes(x = Benthic_Complexity,
+             y = prob)) +
+  geom_pointrange(aes(ymin = lower.HPD,
+                      ymax = upper.HPD),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#E29297",
+                  fill = "#E29297") +
+  scale_y_continuous(Abundance~(ind.150m^-2),
+                     limits = c(0, 6),
+                     breaks = seq(0, 6, by = 2)) +
+  scale_x_discrete(name = "Benthic complexity") +
+  theme_classic() +
+  ggtitle("Excavators") +
+     theme(axis.title=element_text(size = 15),
+        axis.text=element_text(size = 12),
+        #axis.ticks=element_blank(),
+        #axis.text.y = element_text(size = 12),
+        #axis.title.y = element_text(size = 15),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Benthic_Complexity = 5.5,
+                           prob = 5.5
+                           ),
+             aes(image = "Images/chlorurus.png"),
+             size = 0.30)
+```
+
+#### Plot bc contrasts
+
+```{r}
+# prepare db
+exc_abun_bc_pair <- 
+  exc_mod |> 
+  emmeans(~ Benthic_Complexity,
+          type = "link") |> 
+  #subset(Habitat != "passage") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) |> 
+  as.data.frame()
+
+# plot
+ p_exc_abun_bc_pair <- 
+   ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = exc_abun_bc_pair |> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = exc_abun_bc_pair |> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#E29297",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+ scale_x_discrete(name = "Contrast: benthic complexity",
+                   labels = function(x) gsub("_", " ", x)) +
+  ggtitle("Excavators") +
+   theme(
+    axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+## REEF ZONE
+
+## Exc reef zone newdata
+
+```{r}
+exc_nd_zone <- 
+  emmeans(exc_mod,
+          ~Habitat,
+           type = "response") |> 
+  as.data.frame() |> 
+  filter(Habitat != "passage") |> 
+  mutate(Habitat = factor(Habitat,
+                          levels = c("lagoon",
+                                     "inner_reef",
+                                     "outer_slope"))) |> 
+  mutate(Habitat = recode(Habitat,
+                          "inner_reef" = "inner reef",
+                          "outer_slope" = "outer reef"))
+  
+```
+
+### Exc zone plot
+
+```{r}
+p_zone_exc_A <- 
+exc_nd_zone |> 
+  ggplot(aes(x = Habitat,
+             y = prob)) +
+  geom_pointrange(aes(ymin = lower.HPD,
+                      ymax = upper.HPD),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#E29297",
+                  fill = "#E29297") +
+  scale_y_continuous(Abundance~(ind.150m^-2),
+                     limits = c(0, 4),
+                     breaks = seq(0, 4, by = 2)) +
+  scale_x_discrete(name = "Reef zone") +
+  theme_classic() +
+  ggtitle("Excavators") +
+     theme(axis.title=element_text(size = 15),
+        axis.text=element_text(size = 12),
+        #axis.ticks=element_blank(),
+        #axis.text.y = element_text(size = 12),
+        #axis.title.y = element_text(size = 15),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Habitat = 3.2,
+                           prob = 3.5
+                           ),
+             aes(image = "Images/chlorurus.png"),
+             size = 0.30)
+```
+
+#### Plot zone contrasts
+
+```{r}
+# prepare db
+exc_abun_zone_pair <- 
+  exc_mod |> 
+  emmeans(~ Habitat,
+          type = "link") |> 
+  subset(Habitat != "passage") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) |> 
+  as.data.frame()
+
+# plot  
+ p_exc_abun_zone_pair <- 
+   ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = exc_abun_zone_pair |> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = exc_abun_zone_pair |> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#E29297",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+   scale_x_discrete(name = "Contrast: reef zone",
+                   labels = function(x) gsub("_", " ", x)) +
+  #scale_y_continuous(name = "",
+   #                trans = scales::log2_trans(),
+    #               breaks = seq(0, 2, by = 0.5)) +
+  ggtitle("Excavators") +
+   theme(
+    axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+# SCRAPERS
+
+## Load model
+
+```{r}
+load("Model_Outputs/scra_mod.Rdata")
+```
+
+## Exceedance probability
+
+```{r}
+scra_mod |> as_draws_df() |> 
+  dplyr::select(matches("^b_.*")) |> 
+  exp() |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl= ~mean(.x < 1),
+                  Pg = ~mean(.x > 1))|> 
+  filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+## DEPTH
+
+### Scra predict
+
+```{r, cache=TRUE}
+scra_depth_pred <- 
+  scra_mod |> 
+  emmeans(~ Depth_m, 
+          at = depth_newdata, 
+          type = "response",
+          rg.limit=12000) |> 
+  as.data.frame()
+```
+
+### Scra depth plot
+
+```{r}
+p_depth_scra_A <- 
+scra_depth_pred  |> 
+  ggplot(aes(y = prob,
+             x = Depth_m)) +
+    geom_point(data = fg_abun,
+             aes(y = scraper),
+             size = 2.5,
+             shape = 21,
+             color = "#BFAECF",
+             fill = "#BFAECF",
+             alpha = 0.3) +
+  geom_line(linewidth = 2,
+            color = "#BFAECF") +
+  geom_ribbon(aes(ymin = lower.HPD,
+                  ymax = upper.HPD),
+              fill = "#BFAECF",
+              color = "#BFAECF",
+              alpha = 0.6) +
+  scale_y_continuous(name = "",
+                       limits = c(0, 60),
+    breaks = seq(0, 60, by = 20)) +
+  scale_x_continuous(name = "Depth (m)",
+                     breaks = seq(0, 100, by = 20)) +
+  theme_classic() +
+  ggtitle("Scrapers") +
+   theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(size = 12),
+        axis.title.x = element_text(size = 15),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Depth_m = 90,
+                           prob = 57),
+             aes(image = "Images/scarus.png"),
+             size = 0.30)
+```
+
+## SLOPE
+
+## Scra slope newdata
+
+```{r}
+scra_nd_slope <- emmeans(scra_mod,
+                          ~Aspect_descriptive,
+                          type = "response") |> 
+  as.data.frame()
+```
+
+### Scra slope plot
+
+```{r}
+p_slope_scra_A <- 
+scra_nd_slope |> 
+  ggplot(aes(x = Aspect_descriptive,
+             y = prob)) +
+  geom_pointrange(aes(ymin = lower.HPD,
+                      ymax = upper.HPD),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#BFAECF",
+                  fill = "#BFAECF") +
+  scale_y_continuous(name = "",
+                     limits = c(0,6),
+                     breaks = seq(0,6, by = 2)) +
+  scale_x_discrete(name = "Slope orientation",
+                   labels = c("Flat",
+                              "Gentle slope",
+                              "Moderate slope",
+                              "Steep slope",
+                              "Wall")) +
+  theme_classic() +
+  ggtitle("Scrapers") +
+  theme(axis.text.x = element_text(angle = 20,
+                                 vjust = 0.90,
+                                 hjust = 0.70,
+                                 size = 12),
+        axis.title = element_text(size = 15),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Aspect_descriptive = 5,
+                           prob = 5.5),
+             aes(image = "Images/scarus.png"),
+             size = 0.30)
+```
+
+#### Slope pairwise
+
+```{r}
+scra_mod|> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+##### Plot pairwise
+
+```{r}
+scra_abun_slope_pair <- scra_mod|> emmeans(~ Aspect_descriptive,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) 
+  
+ p_scra_abun_slope_pair <- ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = scra_abun_slope_pair|> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = scra_abun_slope_pair|> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#BFAECF",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  scale_x_discrete(name = "") +
+  scale_y_continuous(name = "Scaled effect size",
+                   trans = scales::log2_trans()) +
+  ggtitle("Scrapers") +
+  theme(axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.title.x = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+## BENTHIC COMPLEXITY
+
+```{r}
+scra_nd_bc <- 
+  emmeans(scra_mod,
+          ~Benthic_Complexity,
+           type = "response") |> 
+  as.data.frame()
+```
+
+### Plot bc
+
+```{r}
+p_bc_scra_A <- 
+scra_nd_bc |> 
+  ggplot(aes(x = Benthic_Complexity,
+             y = prob)) +
+  geom_pointrange(aes(ymin = lower.HPD,
+                      ymax = upper.HPD),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#BFAECF",
+                  fill = "#BFAECF") +
+  scale_y_continuous(name = "",
+                     limits = c(0,6),
+                     breaks = seq(0,6, by = 2)) +
+  scale_x_discrete(name = "Benthic complexity") +
+  theme_classic() +
+  ggtitle("Scrapers") +
+     theme(axis.title.x =element_text(size = 15),
+        axis.text.x=element_text(size = 12),
+        axis.ticks.y=element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank(),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Benthic_Complexity = 5.5,
+                           prob = 5.5),
+             aes(image = "Images/scarus.png"),
+             size = 0.30)
+```
+
+#### Pairwise crop benthic complexity
+
+```{r}
+scra_mod |> 
+  emmeans(~Benthic_Complexity,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85)
+```
+
+## Plot BC contrasts
+
+```{r}
+# prepare db
+scra_abun_bc_pair <- 
+  scra_mod |> 
+  emmeans(~ Benthic_Complexity,
+          type = "link") |> 
+  #subset(Habitat != "passage") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) |> 
+  as.data.frame()
+
+# plot  
+ p_scra_abun_bc_pair <- 
+   ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = scra_abun_bc_pair |> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = scra_abun_bc_pair |> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#BFAECF",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  #scale_y_continuous(name = "",
+   #                trans = scales::log2_trans(),
+    #               breaks = seq(0, 2, by = 0.5)) +
+  ggtitle("Scrapers") +
+  theme(axis.title.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+    axis.title.x = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+## REEF ZONE
+
+### Scra reef zone newdata
+
+```{r}
+scra_nd_zone <- 
+  emmeans(scra_mod,
+          ~Habitat,
+           type = "response") |> 
+  as.data.frame() |> 
+  filter(Habitat != "passage") |> 
+  mutate(Habitat = factor(Habitat,
+                          levels = c("lagoon",
+                                     "inner_reef",
+                                     "outer_slope"))) |> 
+  mutate(Habitat = recode(Habitat,
+                          "inner_reef" = "inner reef",
+                          "outer_slope" = "outer reef"))
+  
+```
+
+#### Plot zone
+
+```{r}
+p_zone_scra_A <- 
+scra_nd_zone |> 
+  ggplot(aes(x = Habitat,
+             y = prob)) +
+  geom_pointrange(aes(ymin = lower.HPD,
+                      ymax = upper.HPD),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#BFAECF",
+                  fill = "#BFAECF") +
+  scale_y_continuous(name = "",
+                     limits = c(0,4),
+                     breaks = seq(0,4, by = 2)) +
+  scale_x_discrete(name = "Reef zone") +
+  theme_classic() +
+  ggtitle("Scrapers") +
+     theme(axis.title.x =element_text(size = 15),
+        axis.text.x=element_text(size = 12),
+        axis.ticks.y=element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank(),
+        plot.title = element_text(size = 18)) +
+  geom_image(data = tibble(Habitat = 3.2,
+                           prob = 3.5),
+             aes(image = "Images/scarus.png"),
+             size = 0.30)
+```
+
+##### Plot zone contrasts
+
+```{r}
+# prepare db
+scra_abun_zone_pair <- 
+  scra_mod |> 
+  emmeans(~ Habitat,
+          type = "link") |> 
+  subset(Habitat != "passage") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) |> 
+  as.data.frame()
+
+# plot  
+ p_scra_abun_zone_pair <- 
+   ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = scra_abun_zone_pair |> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = scra_abun_zone_pair |> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#BFAECF",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  #scale_y_continuous(name = "",
+   #                trans = scales::log2_trans(),
+    #               breaks = seq(0, 2, by = 0.5)) +
+  ggtitle("Scrapers") +
+  theme(axis.title.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(),
+    axis.title.x = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+# COMBINED DEPTH PLOT
+
+```{r}
+p_abun_all <-
+(p_depth_allherbs_A + p_depth_brow_A) /
+  (p_depth_crop_A + p_depth_det_A) /
+  (p_depth_exc_A + p_depth_scra_A) + 
+  plot_annotation(tag_levels = "a") &
+  theme(plot.tag = element_text(size = 15))
+```
+
+## ggsave
+
+```{r}
+ggsave("Figures/Fig. 3. abun_depth.jpeg",
+       plot = p_abun_all, 
+       dpi = 600, 
+       height = 9.5, 
+       width = 9.5, 
+       units = "in")
+```
+
+# COMBINED SLOPE PLOT
+
+```{r}
+p_abun_slope_all <-
+(p_slope_allherbs_A + p_slope_brow_A) /
+  (p_slope_crop_A + p_slope_det_A) /
+  (p_slope_exc_A + p_slope_scra_A) + 
+  plot_annotation(tag_levels = "a") &
+  theme(plot.tag = element_text(size = 15))
+```
+
+## ggsave
+
+```{r}
+ggsave("Figures/Fig. 4. abun_slope.jpeg",
+       plot = p_abun_slope_all, 
+       dpi = 600, 
+       height = 10, 
+       width = 10, 
+       units = "in")
+```
+
+# COMBINE SLOPE PAIRWISE
+
+```{r}
+p_fg_abun_slope_pair <- 
+(p_brow_abun_slope_pair + p_crop_abun_slope_pair + p_det_abun_slope_pair) /
+  (p_exc_abun_slope_pair + p_scra_abun_slope_pair) +
+  plot_annotation(tag_levels = "a") &
+  theme(plot.tag = element_text(size = 15))
+```
+
+## ggsave
+
+```{r}
+ggsave("Fig. S2. fg_abun_slope_pair.jpeg",
+       plot = p_fg_abun_slope_pair, 
+       dpi = 600, 
+       height = 7, 
+       width = 10, 
+       units = "in")
+```
+
+# COMBINE BC PLOTS
+
+```{r}
+p_abun_bc_all <-
+(p_bc_allherbs_A + p_bc_brow_A) /
+  (p_bc_crop_A + p_bc_det_A) /
+  (p_bc_exc_A + p_bc_scra_A) + 
+  plot_annotation(tag_levels = "a") &
+  theme(plot.tag = element_text(size = 15))
+```
+
+## ggsave
+
+```{r}
+ggsave("Figures/Fig. X. abun_bc.jpeg",
+       plot = p_abun_bc_all, 
+       dpi = 600, 
+       height = 10, 
+       width = 10, 
+       units = "in")
+```
+
+# COMBINE ZONE PLOTS
+
+```{r}
+p_abun_zone_all <-
+(p_zone_allherbs_A + p_zone_brow_A) /
+  (p_zone_crop_A + p_zone_det_A) /
+  (p_zone_exc_A + p_zone_scra_A) + 
+  plot_annotation(tag_levels = "a") &
+  theme(plot.tag = element_text(size = 15)) 
+```
+
+## ggsave
+
+```{r}
+ggsave("Figures/Fig. X. abun_zone.jpeg",
+       plot = p_abun_zone_all, 
+       dpi = 600, 
+       height = 10, 
+       width = 10, 
+       units = "in")
+```
+
+# COMBINE ZONE PAIRWISE
+
+```{r}
+p_abun_zone_all_pair <-
+(p_th_abun_zone_pair + p_brow_abun_zone_pair) /
+  (p_crop_abun_zone_pair + p_det_abun_zone_pair) /
+  (p_exc_abun_zone_pair + p_scra_abun_zone_pair) + 
+  plot_annotation(tag_levels = "a") &
+  theme(plot.tag = element_text(size = 15)) &
+  labs(y = "Scaled effect size", x = "Contrast: reef zone")
+```
+
+## ggsave
+
+```{r}
+ggsave("Figures/Fig. SX. abun_zone_pair.jpeg",
+       plot = p_abun_zone_all_pair, 
+       dpi = 600, 
+       height = 10, 
+       width = 10, 
+       units = "in")
+```
+
+# COMBINE BC PAIRWISE
+
+```{r}
+p_abun_bc_all_pair <-
+(p_th_abun_bc_pair + p_brow_abun_bc_pair) /
+  (p_crop_abun_bc_pair + p_det_abun_bc_pair) /
+  (p_exc_abun_bc_pair + p_scra_abun_bc_pair) + 
+  plot_annotation(tag_levels = "a") &
+  theme(plot.tag = element_text(size = 15)) &
+  labs(y = "Scaled effect size", x = "Contrast: benthic complexity")
+```
+
+## ggsave
+
+```{r}
+ggsave("Figures/Fig. SX. abun_bc_pair.jpeg",
+       plot = p_abun_bc_all_pair, 
+       dpi = 600, 
+       height = 12, 
+       width = 10, 
+       units = "in")
+```

@@ -13,6 +13,10 @@ gc()
 
 Quarto document for fitting abundance among depth bands, reef zones and slope orientation using Bayesian and negative binomial distribution. Site nested in reef are considered group level variables.
 
+Analysis were conducted on total herbivore abundance and for each functional group independently. MCMC checks and model diagnostics were also conducted to see model fits.
+
+Because Bayesian calculations take a while, all models were saved into the folder called "Model_Outputs". 
+
 # Load library
 
 ```{r}

@@ -292,7 +292,7 @@ p_zone / p_slope +
 ### ggsave
 
 ```{r}
-ggsave("Fig. SX. assem_zone_slope.jpeg",
+ggsave("Figures/Fig. SX. assem_zone_slope.jpeg",
        plot = p_zone_slope, 
        dpi = 600, 
        height = 8, 
@@ -375,7 +375,7 @@ abun_ord |>
 ## ggsave
 
 ```{r}
-ggsave("Fig. SX. assem_abundance.jpeg",
+ggsave("Figures/Fig. SX. assem_abundance.jpeg",
        plot = ord_mean_abun, 
        dpi = 600, 
        height = 6, 

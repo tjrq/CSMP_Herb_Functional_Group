@@ -1,0 +1,566 @@
+---
+title: "Sprich_results"
+format: html
+editor: visual
+---
+
+# Cleanup
+
+```{r}
+rm(list=ls())
+gc()
+```
+
+Quarto document for interpreting and plotting species richness among depth bands, slope orientation, and benthic complexity
+
+# Load library
+
+```{r}
+#| label: libraries
+#| output: false
+#| eval: true
+#| warning: false
+#| message: false
+#| cache: false
+
+library(tidyverse)
+#library(rstanarm)
+library(brms)
+library(coda)
+library(bayesplot)
+library(DHARMa)
+library(emmeans)
+library(broom)
+library(tidybayes)
+library(ggeffects)
+library(broom.mixed)
+library(bayestestR)
+library(see)
+library(easystats)
+library(patchwork)
+library(ggridges)
+source("helperFunctions.R")
+library(ggimage)
+library(vegan)
+library(BiodiversityR)
+library(ggrepel)
+```
+
+# Load model and rawdata
+
+```{r}
+#model
+load("Model_Output/sprich_mod.Rdata")
+
+#rawdata
+#used for plotting with newdata
+sprich <- read_csv("Data/herb_sprich.csv",
+                      trim_ws = TRUE)
+```
+
+# Summary table
+
+```{r}
+sprich_mod |> as_draws_df() |> 
+  dplyr::select(matches("^b_.*")) |> 
+  exp() |> # backtransform from logscale
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  Pl= ~mean(.x < 1), #exceedence prob
+                  Pg = ~mean(.x > 1)) |> 
+  filter(Pl > 0.85 | # filter weak evidence (0.85)
+           Pg > 0.85)
+```
+
+# Plots
+
+## DEPTH
+
+### Newdata for plotting depth
+
+```{r}
+sprich_newdata <- with(sprich,
+                       data.frame(Depth_m = seq(min(Depth_m),
+                                              max(Depth_m),
+                                              length = 100)))
+```
+
+### Prep db for plotting
+
+```{r, cache=TRUE}
+sprich_pred_depth <- 
+  sprich_mod |> 
+  emmeans(~ Depth_m, 
+          at = sprich_newdata, 
+          type = "link",
+          rg.limit = 12000) |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp_sprich = exp(.value)) |> 
+  dplyr::select(-.chain,
+                -.iteration,
+                -.value) |> 
+  summarise_draws(median, 
+                  HDInterval::hdi) |> 
+  as.data.frame() # DONE
+```
+
+### Plot depth
+
+```{r}
+p_sprich_depth <-
+sprich_pred_depth |> 
+  ggplot(aes(y = median,
+             x = Depth_m)) +
+    geom_point(data = sprich,
+             aes(y = Estimator),
+             size = 2.5, 
+             shape = 21,
+             color = "#8AA17D",
+             fill = "#8AA17D",
+             alpha = 0.3) +
+  geom_line(linewidth = 2,
+            color = "#8AA17D") +
+  geom_ribbon(aes(ymin = lower,
+                  ymax = upper),
+              fill = "#8AA17D",
+              color = "#8AA17D",
+              alpha = 0.6) +
+  scale_y_continuous(expression(Species~richness~(ind.150m^-2)),
+                       limits = c(0, 30),
+  breaks = seq(0, 30, by = 10)) +
+  scale_x_continuous(name = "Depth (m)",
+                     breaks = seq(0, 100, by = 20)) +
+  theme_classic() +
+     theme(axis.title.x=element_text(size = 15),
+        axis.text.x=element_text(size = 12),
+        axis.title.y=element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        plot.title = element_text(size = 18)) +
+  ggtitle("Total herbivores") +
+  theme(legend.position = "none")
+```
+
+### add images
+
+```{r}
+p_sprich_depth <-
+p_sprich_depth + geom_image(data = tibble(Depth_m = 90,
+                            median = 29),
+                            aes(image = ("Images/naso.png")),
+                            size = 0.30) +
+  geom_image(data = tibble(Depth_m = 90,
+                            median = 23),
+                            aes(image = ("Images/ctenochaetus.png")),
+                            size = 0.30) +
+  geom_image(data = tibble(Depth_m = 70,
+                            median = 29),
+                            aes(image = ("Images/scarus.png")),
+                            size = 0.30) +
+    geom_image(data = tibble(Depth_m = 70,
+                            median = 23),
+                            aes(image = ("Images/chlorurus.png")),
+                            size = 0.30) +
+  theme(legend.position = "none")
+  
+```
+
+## SLOPE
+
+### Newdata for plotting Slope
+
+```{r}
+sprich_slope <- sprich_mod |> 
+  emmeans(~ Aspect, 
+          type = "link") |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp_sprich = exp(.value)) |> 
+  dplyr::select(-.chain,
+                -.iteration,
+                -.value) |> 
+  summarise_draws(median, 
+                  HDInterval::hdi) |> 
+  as.data.frame()
+```
+
+### Plot slope
+
+```{r}
+p_sprich_slope <- 
+sprich_slope |> 
+  ggplot(aes(x = Aspect,
+             y = median)) +
+  geom_pointrange(aes(ymin = lower,
+                      ymax = upper),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#8AA17D",
+                  fill = "#8AA17D") +
+  scale_y_continuous(Species~richness~(ind.150m^-2),
+                     limits = c(0, 8),
+                     breaks = seq(0, 8, by = 2)) +
+  scale_x_discrete(name = "Slope orientation",
+                   labels = c("Flat",
+                              "Gentle slope",
+                              "Moderate slope",
+                              "Steep slope",
+                              "Wall")) +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 20,
+                                 vjust = 0.90,
+                                 hjust = 0.70,
+                                 size = 12),
+        axis.title = element_text(size = 15),
+        axis.text.y = element_text(size = 12))
+```
+
+#### Pairwise slope
+
+```{r}
+sprich_mod |> emmeans(~ Aspect,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  rhat,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85) 
+```
+
+##### Prepare db for contrasts
+
+```{r}
+sprich_slope_pair <- 
+  sprich_mod |> emmeans(~ Aspect,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) 
+```
+
+##### Plot contrasts
+
+```{r}
+ p_sprich_slope_pair <- ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = sprich_slope_pair |> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = sprich_slope_pair |> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#8AA17D",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  scale_x_discrete(name = "Constrast: slope orientation",
+                   labels = function(x) gsub("_", " ", x)) +
+  scale_y_continuous(name = "",
+                   trans = scales::log2_trans(),
+                   breaks = seq(0, 2.5, by = 0.5)) +
+  ggtitle("Species richness") +
+  theme(axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 18))
+```
+
+## BENTHIC COMPLEXITY
+
+### Newdata for plotting benthic complexity
+
+```{r}
+sprich_bc <- sprich_mod |> 
+  emmeans(~ Benthic_Complexity, 
+          type = "link") |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp_sprich = exp(.value)) |> 
+  dplyr::select(-.chain,
+                -.iteration,
+                -.value) |> 
+  summarise_draws(median, 
+                  HDInterval::hdi) |> 
+  as.data.frame() 
+```
+
+### Plot bc
+
+```{r}
+p_sprich_bc <- 
+sprich_bc |> 
+  ggplot(aes(x = Benthic_Complexity,
+             y = median)) +
+  geom_pointrange(aes(ymin = lower,
+                      ymax = upper),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#8AA17D",
+                  fill = "#8AA17D") +
+  scale_y_continuous(Species~richness~(ind.150m^-2),
+                     limits = c(0, 8),
+                     breaks = seq(0, 8, by = 2)) +
+  #scale_x_discrete(name = "Slope orientation",
+   #                labels = c("Flat",
+    #                          "Gentle slope",
+     #                         "Moderate slope",
+      #                        "Steep slope",
+       #                       "Wall")) +
+  scale_x_discrete(name = "Benthic complexity") +
+  theme_classic() +
+  theme(axis.text.x = element_text(
+                                 size = 12),
+        axis.title = element_text(size = 15),
+        axis.text.y = element_text(size = 12))
+```
+
+#### Pairwise bc
+
+```{r}
+sprich_mod |> 
+  emmeans(~ Benthic_Complexity,
+                         type = "link") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp = exp(.value)) |> 
+  dplyr::select(-.chain, 
+                -.value,
+                -.iteration) |> 
+  summarise_draws(median,
+                  HDInterval::hdi,
+                  rhat,
+                  Pl = ~mean(.x < 1),
+                  Pg = ~mean(.x > 1)) |> 
+  dplyr::filter(Pl > 0.85 | 
+           Pg > 0.85) 
+```
+
+##### Plot bc contrasts
+
+```{r}
+# prepare db
+sprich_bc_pair <- 
+  sprich_mod |> 
+  emmeans(~ Benthic_Complexity,
+          type = "link") |> 
+  #subset(Habitat != "passage") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) |> 
+  as.data.frame()
+
+# plot   
+ p_sprich_bc_pair <- 
+   ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = sprich_bc_pair |> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = sprich_bc_pair |> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#8AA17D",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+  #scale_x_discrete(name = "Reef zone",
+   #                labels = c("Inner reef",
+    #                          "Lagoon",
+     #                         "Outer reef")) +
+   scale_x_discrete(name = "Contrast: benthic complexity",
+                   labels = function(x) gsub("_", " ", x)) +
+  scale_y_continuous(name = "Scaled effect size",
+                   trans = scales::log2_trans(),
+                   breaks = seq(0, 2, by = 0.5)) +
+  #ggtitle("Species richness") +
+  theme(axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 18)) 
+
+# save fig 
+ ggsave("Figures/Fig. SX. sprich_bc_pair.jpeg",
+       plot = p_sprich_bc_pair, 
+       dpi = 600, 
+       height = 5, 
+       width = 8, 
+       units = "in") 
+```
+
+##### Plot zone contrasts
+
+```{r}
+# prepare db
+sprich_zone_pair <- 
+  sprich_mod |> 
+  emmeans(~ Habitat,
+          type = "link") |> 
+  subset(Habitat != "passage") |> 
+  pairs() |> 
+  gather_emmeans_draws() |> 
+  summarise(median_hdci(exp(.value),
+                        .width = c(0.85, 0.95))) |> 
+  as.data.frame()
+
+# plot  
+ p_sprich_zone_pair <- 
+   ggplot() + 
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = sprich_zone_pair |> filter(.width == 0.85),
+                  linewidth = 1.7) +
+  geom_pointrange(aes(y = y, 
+                      x = contrast, 
+                      ymin = ymin, 
+                      ymax = ymax),
+                  data = sprich_zone_pair |> filter(.width == 0.95),
+                  pch = 21,
+                  size = 1.2,
+                  fill = "#8AA17D",
+                  linewidth = 0.7) +
+  geom_hline(yintercept = 1, 
+             linetype = "dashed",
+             color = "red",
+             linewidth = 1) +
+    coord_flip() +
+  theme_classic() +
+   scale_x_discrete(name = "Contrast: reef zone",
+                   labels = function(x) gsub("_", " ", x)) +
+  scale_y_continuous(name = "Scaled effect size",
+                   trans = scales::log2_trans(),
+                   breaks = seq(0, 2, by = 0.5)) +
+  #ggtitle("Species richness") +
+  theme(axis.title = element_text(size = 15),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(size = 18)) #+
+   #labs(y = "Scaled effect size", x = "Contrast: reef zone")
+```
+
+## REEF ZONE
+
+### Newdata for plotting reef zone
+
+```{r}
+sprich_zone <- sprich_mod |> 
+  emmeans(~ Habitat, 
+          type = "link") |> 
+  gather_emmeans_draws() |> 
+  mutate(Exp_sprich = exp(.value)) |> 
+  dplyr::select(-.chain,
+                -.iteration,
+                -.value) |> 
+  summarise_draws(median, 
+                  HDInterval::hdi) |> 
+  as.data.frame() |> 
+  filter(Habitat != "passage") |> 
+  mutate(Habitat = factor(Habitat,
+                          levels = c("lagoon",
+                                     "inner_reef",
+                                     "outer_slope"))) |> 
+  mutate(Habitat = recode(Habitat,
+                          "inner_reef" = "inner reef",
+                          "outer_slope" = "outer reef")) |> 
+  as.data.frame()
+```
+
+### Plot zone
+
+```{r}
+p_sprich_zone <- 
+sprich_zone |> 
+  ggplot(aes(x = Habitat,
+             y = median)) +
+  geom_pointrange(aes(ymin = lower,
+                      ymax = upper),
+                  shape = 21,
+                  size = 1,
+                  fatten = 3,
+                  color = "#8AA17D",
+                  fill = "#8AA17D") +
+  scale_y_continuous(Species~richness~(ind.150m^-2),
+                     limits = c(0, 8),
+                     breaks = seq(0, 8, by = 2)) +
+  #scale_x_discrete(name = "Slope orientation",
+   #                labels = c("Flat",
+    #                          "Gentle slope",
+     #                         "Moderate slope",
+      #                        "Steep slope",
+       #                       "Wall")) +
+  theme_classic() +
+  theme(axis.text.x = element_text(
+                                 size = 12),
+        axis.title = element_text(size = 15),
+        axis.text.y = element_text(size = 12)) +
+  xlab("Reef zone")
+```
+
+# Combine figs
+
+```{r}
+p_sprich_all <-
+p_sprich_depth / 
+  p_sprich_slope /
+  p_sprich_bc /
+  p_ord3 + plot_annotation(tag_levels = "a") &
+  theme(plot.tag = element_text(size = 15))
+```
+
+# ggsave
+
+```{r}
+ggsave("Fig. X2. sprich.jpeg",
+       plot = p_sprich_all, 
+       dpi = 600, 
+       height = 15, 
+       width = 9, 
+       units = "in")
+```
+
+# Combine figs
+
+```{r}
+p_sprich_zone <-
+p_sprich_zone + p_sprich_zone_pair + 
+  plot_annotation(tag_levels = "a") &
+  theme(plot.tag = element_text(size = 15))
+```
+
+# ggsave
+
+```{r}
+ggsave("Figures/Fig. SX. sprich_zone.jpeg",
+       plot = p_sprich_zone, 
+       dpi = 600, 
+       height = 5, 
+       width = 8, 
+       units = "in")
+```

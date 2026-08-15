@@ -537,7 +537,7 @@ p_sprich_depth /
 # ggsave
 
 ```{r}
-ggsave("Fig. X2. sprich.jpeg",
+ggsave("Figures/Fig. X2. sprich.jpeg",
        plot = p_sprich_all, 
        dpi = 600, 
        height = 15, 

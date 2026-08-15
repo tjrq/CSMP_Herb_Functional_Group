@@ -6,6 +6,8 @@ editor: visual
 
 Quarto document for data preparation. Code here is for subsetting herbivore data from the main fish dataset. The main fish dataset is not shared in this repository as other colleagues are using the data for their respective works.
 
+For species richness, an iNEXT analysis was conducted to estimate asymptotic species richness, with these estimates subsequent used for the species richness analysis.
+
 # Load library
 
 ```{r}

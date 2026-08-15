@@ -11,7 +11,9 @@ rm(list=ls())
 gc()
 ```
 
-Quarto document for interpreting and plotting abundance among depth bands, slope orientation and benthic complexity.
+Quarto document for interpreting and plotting total herbivore abundance and for each functional group. For JCU data archiving, the folder called "Images" that contained fish silhouettes and the "Figures" folder that contained the figure outputs were removed as they were not necessary. 
+
+Code for ggplot should work as long as any code with "geom_image()" are commented out or removed entirely. 
 
 # Load library
 
@@ -2581,7 +2583,7 @@ p_fg_abun_slope_pair <-
 ## ggsave
 
 ```{r}
-ggsave("Fig. S2. fg_abun_slope_pair.jpeg",
+ggsave("Figures/Fig. S2. fg_abun_slope_pair.jpeg",
        plot = p_fg_abun_slope_pair, 
        dpi = 600, 
        height = 7, 
